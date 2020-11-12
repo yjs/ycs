@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ycs", "src\Ycs\Ycs.csproj", "{DFF8A62E-F42A-4974-A9E5-7B180C989762}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ycs.Tests", "tests\Ycs.Tests\Ycs.Tests.csproj", "{1D60757D-1CAC-4616-A6AC-52F47D285C29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFF8A62E-F42A-4974-A9E5-7B180C989762}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFF8A62E-F42A-4974-A9E5-7B180C989762}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFF8A62E-F42A-4974-A9E5-7B180C989762}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFF8A62E-F42A-4974-A9E5-7B180C989762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D60757D-1CAC-4616-A6AC-52F47D285C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D60757D-1CAC-4616-A6AC-52F47D285C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D60757D-1CAC-4616-A6AC-52F47D285C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D60757D-1CAC-4616-A6AC-52F47D285C29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D7D58AD-F6FB-4263-A6DA-C9D0E655D3C2}
+	EndGlobalSection
+EndGlobal

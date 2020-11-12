@@ -1,0 +1,25 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+node_modules/
+.vscode/chrome
+.babel-cache-shell
+.temp
+.vs/
+bin/
+obj/
+TestResults/
+
+tsconfig.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log
+
+# PCF-Controls
+.suo
+out/
+obj/
+
+# ESLint cache
+.eslintcache
