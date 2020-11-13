@@ -11,7 +11,6 @@ using System.Linq;
 
 namespace Ycs
 {
-
     /// <summary>
     /// Event that describes changes on a YMap.
     /// </summary>

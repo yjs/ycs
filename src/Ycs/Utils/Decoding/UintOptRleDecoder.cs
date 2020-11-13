@@ -17,7 +17,6 @@ namespace Ycs
         public UintOptRleDecoder(Stream input, bool leaveOpen = false)
             : base(input, leaveOpen)
         {
-            Console.WriteLine($"uint decoder input, {input.Length}: {string.Join(",", (input as MemoryStream).ToArray())}");
             // Do nothing.
         }
 
