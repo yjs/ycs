@@ -303,7 +303,7 @@ namespace Ycs
         {
             Transact(tr =>
             {
-                using var structDecoder = new DSDecoderV2(input);
+                using var structDecoder = new UpdateDecoderV2(input);
                 EncodingUtils.ReadStructs(structDecoder, tr, Store);
                 Store.ReadAndApplyDeleteSet(structDecoder, tr);
             }, transactionOrigin, local);
@@ -333,7 +333,7 @@ namespace Ycs
         /// </summary>
         public byte[] EncodeStateAsUpdateV2(byte[] encodedTargetStateVector = null)
         {
-            using var encoder = new DSEncoderV2();
+            using var encoder = new UpdateEncoderV2();
             var targetStateVector = encodedTargetStateVector == null
                 ? new Dictionary<int, int>()
                 : EncodingUtils.DecodeStateVector(new MemoryStream(encodedTargetStateVector, writable: false));
@@ -341,7 +341,7 @@ namespace Ycs
             return encoder.ToArray();
         }
 
-        public void WriteStateVector(IUpdateEncoder encoder)
+        public void WriteStateVector(IDSEncoder encoder)
         {
             EncodingUtils.WriteStateVector(encoder, Store.GetStateVector());
         }
@@ -398,7 +398,7 @@ namespace Ycs
             var handler = UpdateV2;
             if (handler != null)
             {
-                using var encoder = new DSEncoderV2();
+                using var encoder = new UpdateEncoderV2();
                 var hasContent = transaction.WriteUpdateMessageFromTransaction(encoder);
                 if (hasContent)
                 {

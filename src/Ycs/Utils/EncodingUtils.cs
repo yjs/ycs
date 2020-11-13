@@ -192,7 +192,7 @@ namespace Ycs
             return clientRefs;
         }
 
-        public static void WriteStateVector(IUpdateEncoder encoder, IDictionary<int, int> sv)
+        public static void WriteStateVector(IDSEncoder encoder, IDictionary<int, int> sv)
         {
             encoder.RestWriter.WriteVarUint((uint)sv.Count);
 
@@ -206,7 +206,7 @@ namespace Ycs
             }
         }
 
-        public static IDictionary<int, int> ReadStateVector(IUpdateDecoder decoder)
+        public static IDictionary<int, int> ReadStateVector(IDSDecoder decoder)
         {
             var ss = new Dictionary<int, int>();
             var ssLength = decoder.Reader.ReadVarUint();

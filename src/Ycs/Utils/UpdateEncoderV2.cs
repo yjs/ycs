@@ -12,47 +12,21 @@ using System.Text;
 
 namespace Ycs
 {
-    public sealed class DSEncoderV2 : IUpdateEncoder
+    public class DSEncoderV2 : IDSEncoder
     {
-        // Refers to the next unique key-identifier to be used.
-        private int _keyClock;
-        private IDictionary<string, int> _keyMap;
         private int _dsCurVal;
-        private bool _disposed;
-
-        private IntDiffOptRleEncoder _keyClockEncoder;
-        private UintOptRleEncoder _clientEncoder;
-        private IntDiffOptRleEncoder _leftClockEncoder;
-        private IntDiffOptRleEncoder _rightClockEncoder;
-        private RleEncoder _infoEncoder;
-        private StringEncoder _stringEncoder;
-        private RleEncoder _parentInfoEncoder;
-        private UintOptRleEncoder _typeRefEncoder;
-        private UintOptRleEncoder _lengthEncoder;
-
         private MemoryStream _restStream;
 
         public DSEncoderV2()
         {
-            _keyClock = 0;
             _dsCurVal = 0;
-
-            _keyMap = new Dictionary<string, int>();
-            _keyClockEncoder = new IntDiffOptRleEncoder();
-            _clientEncoder = new UintOptRleEncoder();
-            _leftClockEncoder = new IntDiffOptRleEncoder();
-            _rightClockEncoder = new IntDiffOptRleEncoder();
-            _infoEncoder = new RleEncoder();
-            _stringEncoder = new StringEncoder();
-            _parentInfoEncoder = new RleEncoder();
-            _typeRefEncoder = new UintOptRleEncoder();
-            _lengthEncoder = new UintOptRleEncoder();
 
             _restStream = new MemoryStream();
             RestWriter = new BinaryWriter(_restStream, Encoding.UTF8, leaveOpen: true);
         }
 
         public BinaryWriter RestWriter { get; private set; }
+        protected bool Disposed { get; private set; }
 
         public void Dispose()
         {
@@ -84,7 +58,63 @@ namespace Ycs
             _dsCurVal += length;
         }
 
-        public byte[] ToArray()
+        public virtual byte[] ToArray()
+        {
+            RestWriter.Flush();
+            return _restStream.ToArray();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    RestWriter.Dispose();
+                    _restStream.Dispose();
+                }
+
+                RestWriter = null;
+                _restStream = null;
+
+                Disposed = true;
+            }
+        }
+    }
+
+    public sealed class UpdateEncoderV2 : DSEncoderV2, IUpdateEncoder
+    {
+        // Refers to the next unique key-identifier to be used.
+        private int _keyClock;
+        private IDictionary<string, int> _keyMap;
+
+        private IntDiffOptRleEncoder _keyClockEncoder;
+        private UintOptRleEncoder _clientEncoder;
+        private IntDiffOptRleEncoder _leftClockEncoder;
+        private IntDiffOptRleEncoder _rightClockEncoder;
+        private RleEncoder _infoEncoder;
+        private StringEncoder _stringEncoder;
+        private RleEncoder _parentInfoEncoder;
+        private UintOptRleEncoder _typeRefEncoder;
+        private UintOptRleEncoder _lengthEncoder;
+
+        public UpdateEncoderV2()
+        {
+            _keyClock = 0;
+
+            _keyMap = new Dictionary<string, int>();
+            _keyClockEncoder = new IntDiffOptRleEncoder();
+            _clientEncoder = new UintOptRleEncoder();
+            _leftClockEncoder = new IntDiffOptRleEncoder();
+            _rightClockEncoder = new IntDiffOptRleEncoder();
+            _infoEncoder = new RleEncoder();
+            _stringEncoder = new StringEncoder();
+            _parentInfoEncoder = new RleEncoder();
+            _typeRefEncoder = new UintOptRleEncoder();
+            _lengthEncoder = new UintOptRleEncoder();
+        }
+
+        public override byte[] ToArray()
         {
             using var stream = new MemoryStream();
 
@@ -93,7 +123,7 @@ namespace Ycs
                 // Read the feature flag that might be used in the future.
                 writer.Write((byte)0);
 
-                // @TODO: Maybe pass the writer directly instead of using ToArray()?
+                // TODO: [alekseyk] Maybe pass the writer directly instead of using ToArray()?
                 writer.WriteVarUint8Array(_keyClockEncoder.ToArray());
                 writer.WriteVarUint8Array(_clientEncoder.ToArray());
                 writer.WriteVarUint8Array(_leftClockEncoder.ToArray());
@@ -104,9 +134,9 @@ namespace Ycs
                 writer.WriteVarUint8Array(_typeRefEncoder.ToArray());
                 writer.WriteVarUint8Array(_lengthEncoder.ToArray());
 
-                // Append the rest of the data. Note it's not the 'WriteVarUint8Array'.
-                RestWriter.Flush();
-                writer.Write(_restStream.ToArray());
+                // Append the rest of the data from the RestWriter.
+                // Note it's not the 'WriteVarUint8Array'.
+                writer.Write(base.ToArray());
             }
 
             return stream.ToArray();
@@ -187,9 +217,9 @@ namespace Ycs
             RestWriter.WriteVarString(jsonString);
         }
 
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!Disposed)
             {
                 if (disposing)
                 {
@@ -203,8 +233,6 @@ namespace Ycs
                     _parentInfoEncoder.Dispose();
                     _typeRefEncoder.Dispose();
                     _lengthEncoder.Dispose();
-                    _restStream.Dispose();
-                    RestWriter.Dispose();
                 }
 
                 _keyMap = null;
@@ -217,11 +245,9 @@ namespace Ycs
                 _parentInfoEncoder = null;
                 _typeRefEncoder = null;
                 _lengthEncoder = null;
-                _restStream = null;
-                RestWriter = null;
-
-                _disposed = true;
             }
+
+            base.Dispose(disposing);
         }
     }
 }

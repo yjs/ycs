@@ -11,47 +11,17 @@ using System.Text;
 
 namespace Ycs
 {
-    public sealed class DSDecoderV2 : IUpdateDecoder
+    public class DSDecoderV2 : IDSDecoder
     {
-        /// <summary>
-        /// List of cached keys. If the keys[id] does not exist, we read a new key from
-        /// the string encoder and push it to keys.
-        /// </summary>
-        private List<string> _keys;
         private int _dsCurVal;
-        private bool _disposed;
-
-        private IntDiffOptRleDecoder _keyClockDecoder;
-        private UintOptRleDecoder _clientDecoder;
-        private IntDiffOptRleDecoder _leftClockDecoder;
-        private IntDiffOptRleDecoder _rightClockDecoder;
-        private RleDecoder _infoDecoder;
-        private StringDecoder _stringDecoder;
-        private RleDecoder _parentInfoDecoder;
-        private UintOptRleDecoder _typeRefDecoder;
-        private UintOptRleDecoder _lengthDecoder;
 
         public DSDecoderV2(Stream input, bool leaveOpen = false)
         {
-            _keys = new List<string>();
-
             Reader = new BinaryReader(input, Encoding.UTF8, leaveOpen: leaveOpen);
-
-            // Read feature flag - currently unused.
-            Reader.ReadByte();
-
-            _keyClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _clientDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _leftClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _rightClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _infoDecoder = new RleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _stringDecoder = new StringDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _parentInfoDecoder = new RleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _typeRefDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
-            _lengthDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
         }
 
         public BinaryReader Reader { get; private set; }
+        protected bool Disposed { get; private set; }
 
         public void Dispose()
         {
@@ -77,6 +47,57 @@ namespace Ycs
             Debug.Assert(diff >= 0);
             _dsCurVal += diff;
             return diff;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    Reader.Dispose();
+                }
+
+                Reader = null;
+                Disposed = true;
+            }
+        }
+    }
+
+    public sealed class UpdateDecoderV2 : DSDecoderV2, IUpdateDecoder
+    {
+        /// <summary>
+        /// List of cached keys. If the keys[id] does not exist, we read a new key from
+        /// the string encoder and push it to keys.
+        /// </summary>
+        private List<string> _keys;
+        private IntDiffOptRleDecoder _keyClockDecoder;
+        private UintOptRleDecoder _clientDecoder;
+        private IntDiffOptRleDecoder _leftClockDecoder;
+        private IntDiffOptRleDecoder _rightClockDecoder;
+        private RleDecoder _infoDecoder;
+        private StringDecoder _stringDecoder;
+        private RleDecoder _parentInfoDecoder;
+        private UintOptRleDecoder _typeRefDecoder;
+        private UintOptRleDecoder _lengthDecoder;
+
+        public UpdateDecoderV2(Stream input, bool leaveOpen = false)
+            : base(input, leaveOpen)
+        {
+            _keys = new List<string>();
+
+            // Read feature flag - currently unused.
+            Reader.ReadByte();
+
+            _keyClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _clientDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _leftClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _rightClockDecoder = new IntDiffOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _infoDecoder = new RleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _stringDecoder = new StringDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _parentInfoDecoder = new RleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _typeRefDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
+            _lengthDecoder = new UintOptRleDecoder(Reader.ReadVarUint8ArrayAsStream());
         }
 
         public ID ReadLeftId()
@@ -159,13 +180,12 @@ namespace Ycs
             return result;
         }
 
-        private void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!Disposed)
             {
                 if (disposing)
                 {
-                    Reader.Dispose();
                     _keyClockDecoder.Dispose();
                     _clientDecoder.Dispose();
                     _leftClockDecoder.Dispose();
@@ -177,7 +197,6 @@ namespace Ycs
                     _lengthDecoder.Dispose();
                 }
 
-                Reader = null;
                 _keyClockDecoder = null;
                 _clientDecoder = null;
                 _leftClockDecoder = null;
@@ -187,9 +206,9 @@ namespace Ycs
                 _parentInfoDecoder = null;
                 _typeRefDecoder = null;
                 _lengthDecoder = null;
-
-                _disposed = true;
             }
+
+            base.Dispose(disposing);
         }
     }
 }

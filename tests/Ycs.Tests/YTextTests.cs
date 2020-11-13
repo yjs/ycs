@@ -16,6 +16,19 @@ namespace Ycs
     public class YTextTests : YTestBase
     {
         [TestMethod]
+        public void Sample()
+        {
+            var doc = new YDoc();
+            var text = doc.GetText("monaco");
+            text.Insert(0, "hello");
+            var buff = doc.EncodeStateAsUpdateV2(new byte[] { 0 });
+
+            //doc.ApplyUpdateV2(new byte[] { 0, 0, 5, 144, 207, 169, 140, 4, 0, 0, 1, 4, 14, 11, 109, 111, 110, 97, 99, 111, 104, 101, 108, 108, 111, 6, 5, 1, 1, 0, 0, 1, 1, 0, 0 });
+            //var text = doc.GetText("monaco");
+            //var str = text.ToString();
+        }
+
+        [TestMethod]
         public void TestBasicInsertAndDelete()
         {
             Init(users: 2);

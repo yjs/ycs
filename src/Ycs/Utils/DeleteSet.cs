@@ -307,7 +307,7 @@ namespace Ycs
             }
         }
 
-        public void Write(IUpdateEncoder encoder)
+        public void Write(IDSEncoder encoder)
         {
             encoder.RestWriter.WriteVarUint((uint)Clients.Count);
 
@@ -330,7 +330,7 @@ namespace Ycs
             }
         }
 
-        public static DeleteSet Read(IUpdateDecoder decoder)
+        public static DeleteSet Read(IDSDecoder decoder)
         {
             var ds = new DeleteSet();
 

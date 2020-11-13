@@ -301,7 +301,7 @@ namespace Ycs
             return (item, diff);
         }
 
-        public void ReadAndApplyDeleteSet(IUpdateDecoder decoder, Transaction transaction)
+        public void ReadAndApplyDeleteSet(IDSDecoder decoder, Transaction transaction)
         {
             var unappliedDs = new DeleteSet();
             var numClients = decoder.Reader.ReadVarUint();

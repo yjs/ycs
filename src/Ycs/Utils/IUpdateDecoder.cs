@@ -9,13 +9,17 @@ using System.IO;
 
 namespace Ycs
 {
-    public interface IUpdateDecoder : IDisposable
+    public interface IDSDecoder : IDisposable
     {
         BinaryReader Reader { get; }
 
         void ResetDsCurVal();
         int ReadDsClock();
         int ReadDsLength();
+    }
+
+    public interface IUpdateDecoder : IDSDecoder
+    {
         ID ReadLeftId();
         ID ReadRightId();
         int ReadClient();

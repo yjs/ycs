@@ -7,6 +7,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace Ycs
 {
@@ -145,15 +146,21 @@ namespace Ycs
 
         public byte[] ToArray()
         {
-            using var encoder = new DSEncoderV2();
-            Write(encoder.RestWriter);
-            return encoder.ToArray();
+            using var stream = new MemoryStream();
+            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
+            {
+                Write(writer);
+            }
+
+            return stream.ToArray();
         }
 
-        public static RelativePosition FromStream(Stream input)
+        public static RelativePosition FromStream(Stream input, bool leaveOpen = true)
         {
-            using var decoder = new DSDecoderV2(input);
-            return Read(decoder.Reader);
+            using (var reader = new BinaryReader(input, Encoding.UTF8, leaveOpen))
+            {
+                return Read(reader);
+            }
         }
     }
 

@@ -30,7 +30,7 @@ namespace Ycs
                 throw new Exception("originDoc must not be garbage collected");
             }
 
-            using var encoder = new DSEncoderV2();
+            using var encoder = new UpdateEncoderV2();
             originDoc.Transact(tr =>
             {
                 int size = Sv.Count(kvp => kvp.Value /* clock */ > 0);
