@@ -115,9 +115,7 @@ namespace Ycs
         /// </summary>
         public int ReadClient()
         {
-            var clientId = (int)_clientDecoder.Read();
-            Debug.Assert(clientId >= 0);
-            return clientId;
+            return (int)_clientDecoder.Read();
         }
 
         public byte ReadInfo()

@@ -21,8 +21,6 @@ namespace Ycs
 
         public override void Write(uint value)
         {
-            Debug.Assert(value <= int.MaxValue);
-
             if (_state == value)
             {
                 _count++;

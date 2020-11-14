@@ -24,7 +24,6 @@ namespace Ycs
 
         public ID(int client, int clock)
         {
-            Debug.Assert(client >= 0);
             Debug.Assert(clock >= 0);
 
             Client = client;
@@ -51,7 +50,7 @@ namespace Ycs
         {
             var client = (int)reader.ReadVarUint();
             var clock = (int)reader.ReadVarUint();
-            Debug.Assert(client >= 0 && clock >= 0);
+            Debug.Assert(/*client >= 0 &&*/ clock >= 0);
 
             return new ID(client, clock);
         }
