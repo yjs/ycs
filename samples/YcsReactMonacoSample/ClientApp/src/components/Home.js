@@ -20,6 +20,7 @@ export class Home extends Component {
 
     this._mux = createMutex();
     this._ydoc = new Y.Doc();
+    this._ydoc.clientID = Math.floor(Math.random() * Math.floor(100000));
     this._ytext = this._ydoc.getText("monaco");
 
     this.initConnection();

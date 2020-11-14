@@ -8,11 +8,18 @@ namespace YcsSample.Hubs
     public class YcsHub : Hub
     {
         private static readonly YDoc _doc = new YDoc();
+        private static readonly object _syncRoot = new object();
 
         public async Task GetMissing(string data)
         {
-            var encodedStateVector = DecodeString(data);
-            var update = _doc.EncodeStateAsUpdateV2(encodedStateVector);
+            Console.WriteLine($"------\n{_doc.GetText("monaco").ToString()}\n--------");
+            byte[] encodedStateVector = DecodeString(data);
+
+            byte[] update;
+            lock (_syncRoot)
+            {
+                update = _doc.EncodeStateAsUpdateV2(encodedStateVector);
+            }
             var encodedUpdate = EncodeBytes(update);
 
             await Clients.Caller.SendAsync("getMissing_result_v2", encodedUpdate);
@@ -21,7 +28,11 @@ namespace YcsSample.Hubs
         public async Task UpdateV2(string data)
         {
             var update = DecodeString(data);
-            _doc.ApplyUpdateV2(update, this);
+
+            lock (_syncRoot)
+            {
+                _doc.ApplyUpdateV2(update, this);
+            }
 
             await Clients.Others.SendAsync("updateV2", data);
         }
