@@ -12,7 +12,6 @@ namespace YcsSample.Hubs
 
         public async Task GetMissing(string data)
         {
-            Console.WriteLine($"------\n{_doc.GetText("monaco").ToString()}\n--------");
             byte[] encodedStateVector = DecodeString(data);
 
             byte[] update;
