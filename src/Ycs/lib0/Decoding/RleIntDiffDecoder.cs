@@ -4,46 +4,42 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
+using System.Diagnostics;
 using System.IO;
 
 namespace Ycs
 {
-    public sealed class IntDiffOptRleDecoder : AbstractStreamDecoder<int>
+    internal sealed class RleIntDiffDecoder : AbstractStreamDecoder<int>
     {
-        private int _state;
-        private uint _count;
-        private int _diff;
+        public int _state;
+        public int _count;
 
-        public IntDiffOptRleDecoder(Stream input, bool leaveOpen = false)
+        public RleIntDiffDecoder(Stream input, int start, bool leaveOpen = false)
             : base(input, leaveOpen)
         {
-            // Do nothing.
+            _state = start;
         }
 
         public override int Read()
         {
             if (_count == 0)
             {
-                int diff = Reader.ReadVarInt().value;
+                _state += Reader.ReadVarInt().Value;
 
-                // If the first bit is set, we read more data.
-                bool hasCount = (diff & Bit.Bit1) > 0;
-
-                if (diff < 0)
+                if (HasContent)
                 {
-                    _diff = -((-diff) >> 1);
+                    // See encoder implementation for the reason why this is incremented.
+                    _count = (int)Reader.ReadVarUint() + 1;
+                    Debug.Assert(_count > 0);
                 }
                 else
                 {
-                    _diff = diff >> 1;
+                    // Read the current value forever.
+                    _count = -1;
                 }
-
-                _count = hasCount ? Reader.ReadVarUint() + 2 : 1;
             }
 
-            _state += _diff;
             _count--;
-
             return _state;
         }
     }

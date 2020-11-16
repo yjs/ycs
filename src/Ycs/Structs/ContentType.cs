@@ -9,16 +9,17 @@ using System.Collections.Generic;
 
 namespace Ycs
 {
-    public class ContentType : IContent
+    public class ContentType : IContentEx
     {
         internal const int _ref = 7;
 
-        public ContentType(AbstractType type)
+        internal ContentType(AbstractType type)
         {
             Type = type;
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
+
         public bool Countable => true;
         public int Length => 1;
 
@@ -32,12 +33,12 @@ namespace Ycs
 
         public bool MergeWith(IContent right) => false;
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             Type.Integrate(transaction.Doc, item);
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             var item = Type._start;
 
@@ -75,7 +76,7 @@ namespace Ycs
             transaction.Changed.Remove(Type);
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             var item = Type._start;
             while (item != null)
@@ -99,12 +100,12 @@ namespace Ycs
             Type._map.Clear();
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             Type.Write(encoder);
         }
 
-        public static ContentType Read(IUpdateDecoder decoder)
+        internal static ContentType Read(IUpdateDecoder decoder)
         {
             var typeRef = decoder.ReadTypeRef();
             switch (typeRef)

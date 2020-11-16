@@ -4,39 +4,39 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
-using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Ycs
 {
-    public sealed class UintOptRleDecoder : AbstractStreamDecoder<uint>
+    /// <seealso cref="RleEncoder"/>
+    internal sealed class RleDecoder : AbstractStreamDecoder<byte>
     {
-        private uint _state;
-        private uint _count;
+        private byte _state;
+        private int _count;
 
-        public UintOptRleDecoder(Stream input, bool leaveOpen = false)
+        public RleDecoder(Stream input, bool leaveOpen = false)
             : base(input, leaveOpen)
         {
             // Do nothing.
         }
 
-        public override uint Read()
+        public override byte Read()
         {
             if (_count == 0)
             {
-                var v = Reader.ReadVarInt();
+                _state = Reader.ReadByte();
 
-                // If the sign is negative, we read the count too; otherwise, count is 1.
-                bool isNegative = v.sign < 0;
-                if (isNegative)
+                if (HasContent)
                 {
-                    _state = (uint)(-v.value);
-                    _count = Reader.ReadVarUint() + 2;
+                    // See encoder implementation for the reason why this is incremented.
+                    _count = (int)Reader.ReadVarUint() + 1;
+                    Debug.Assert(_count > 0);
                 }
                 else
                 {
-                    _state = (uint)v.value;
-                    _count = 1;
+                    // Read the current value forever.
+                    _count = -1;
                 }
             }
 

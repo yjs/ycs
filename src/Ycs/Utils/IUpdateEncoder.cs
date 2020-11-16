@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Ycs
 {
-    public interface IDSEncoder : IDisposable
+    internal interface IDSEncoder : IDisposable
     {
         BinaryWriter RestWriter { get; }
 
@@ -25,7 +25,7 @@ namespace Ycs
         void WriteDsLength(int length);
     }
 
-    public interface IUpdateEncoder : IDSEncoder
+    internal interface IUpdateEncoder : IDSEncoder
     {
         void WriteLeftId(ID id);
         void WriteRightId(ID id);

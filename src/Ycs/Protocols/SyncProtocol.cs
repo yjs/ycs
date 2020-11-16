@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Ycs
 {
-    public static class SyncProtocol
+    internal static class SyncProtocol
     {
         public const int MessageYjsSyncStep1 = 0;
         public const int MessageYjsSyncStep2 = 1;

@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Ycs
 {
-    public interface IDSDecoder : IDisposable
+    internal interface IDSDecoder : IDisposable
     {
         BinaryReader Reader { get; }
 
@@ -18,7 +18,7 @@ namespace Ycs
         int ReadDsLength();
     }
 
-    public interface IUpdateDecoder : IDSDecoder
+    internal interface IUpdateDecoder : IDSDecoder
     {
         ID ReadLeftId();
         ID ReadRightId();

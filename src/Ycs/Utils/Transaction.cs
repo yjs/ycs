@@ -19,9 +19,10 @@ namespace Ycs
     /// </summary>
     public class Transaction
     {
-        public readonly IList<AbstractStruct> _mergeStructs;
+        // TODO: [alekseyk] To private?
+        internal readonly IList<AbstractStruct> _mergeStructs;
 
-        public Transaction(YDoc doc, object origin, bool local)
+        internal Transaction(YDoc doc, object origin, bool local)
         {
             Doc = doc;
             DeleteSet = new DeleteSet();
@@ -44,11 +45,6 @@ namespace Ycs
         public YDoc Doc { get; }
 
         public object Origin { get; }
-
-        /// <summary>
-        /// Describes the set of deleted items by Ids.
-        /// </summary>
-        public DeleteSet DeleteSet { get; }
 
         /// <summary>
         /// Holds the state before the transaction started.
@@ -89,7 +85,12 @@ namespace Ycs
 
         public ISet<YDoc> SubdocsLoaded { get; }
 
-        public ID GetNextId()
+        /// <summary>
+        /// Describes the set of deleted items by Ids.
+        /// </summary>
+        internal DeleteSet DeleteSet { get; }
+
+        internal ID GetNextId()
         {
             return new ID(Doc.ClientId, Doc.Store.GetState(Doc.ClientId));
         }
@@ -98,7 +99,7 @@ namespace Ycs
         /// If 'type.parent' was added in current transaction, 'type' technically did not change,
         /// it was just added and we should not fire events for 'type'.
         /// </summary>
-        public void AddChangedTypeToTransaction(AbstractType type, string parentSub)
+        internal void AddChangedTypeToTransaction(AbstractType type, string parentSub)
         {
             var item = type._item;
             if (item == null || (BeforeState.TryGetValue(item.Id.Client, out int clock) && item.Id.Clock < clock && !item.Deleted))
@@ -113,7 +114,7 @@ namespace Ycs
             }
         }
 
-        public static void CleanupTransactions(IList<Transaction> transactionCleanups, int i)
+        internal static void CleanupTransactions(IList<Transaction> transactionCleanups, int i)
         {
             if (i < transactionCleanups.Count)
             {
@@ -299,7 +300,7 @@ namespace Ycs
         /// <summary>
         /// Redoes the effect of this operation.
         /// </summary>
-        public AbstractStruct RedoItem(Item item, ISet<Item> redoItems)
+        internal AbstractStruct RedoItem(Item item, ISet<Item> redoItems)
         {
             var doc = Doc;
             var store = doc.Store;
@@ -417,7 +418,7 @@ namespace Ycs
             return redoneItem;
         }
 
-        public static void SplitSnapshotAffectedStructs(Transaction transaction, Snapshot snapshot)
+        internal static void SplitSnapshotAffectedStructs(Transaction transaction, Snapshot snapshot)
         {
             if (!transaction.Meta.TryGetValue("splitSnapshotAffectedStructs", out var metaObj))
             {
@@ -431,7 +432,7 @@ namespace Ycs
             // Check if we already split for this snapshot.
             if (!meta.Contains(snapshot))
             {
-                foreach (var kvp in snapshot.Sv)
+                foreach (var kvp in snapshot.StateVector)
                 {
                     var client = kvp.Key;
                     var clock = kvp.Value;
@@ -442,13 +443,13 @@ namespace Ycs
                     }
                 }
 
-                snapshot.Ds.IterateDeletedStructs(transaction, item => true);
+                snapshot.DeleteSet.IterateDeletedStructs(transaction, item => true);
                 meta.Add(snapshot);
             }
         }
 
         /// <returns>Whether the data was written.</returns>
-        public bool WriteUpdateMessageFromTransaction(IUpdateEncoder encoder)
+        internal bool WriteUpdateMessageFromTransaction(IUpdateEncoder encoder)
         {
             if (DeleteSet.Clients.Count == 0 && !AfterState.Any(kvp => !BeforeState.TryGetValue(kvp.Key, out var clockB) || kvp.Value != clockB))
             {

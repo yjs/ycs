@@ -57,23 +57,23 @@ namespace Ycs
             text0.Format(1, 3, new Dictionary<string, object> { { "bold", true } });
             var delta = text0.ToDelta();
             Assert.AreEqual(3, delta?.Count);
-            Assert.AreEqual("b", delta[0].Insert[0]);
+            Assert.AreEqual("b", delta[0].Insert);
             Assert.IsNull(delta[0].Attributes);
-            Assert.AreEqual("cxy", delta[1].Insert[0]);
+            Assert.AreEqual("cxy", delta[1].Insert);
             Assert.AreEqual(true, delta[1].Attributes["bold"]);
 
             undoManager.Undo();
             delta = text0.ToDelta();
             Assert.AreEqual(1, delta?.Count);
-            Assert.AreEqual("bcxyz", delta[0].Insert[0]);
+            Assert.AreEqual("bcxyz", delta[0].Insert);
             Assert.IsNull(delta[0].Attributes);
 
             undoManager.Redo();
             delta = text0.ToDelta();
             Assert.AreEqual(3, delta?.Count);
-            Assert.AreEqual("b", delta[0].Insert[0]);
+            Assert.AreEqual("b", delta[0].Insert);
             Assert.IsNull(delta[0].Attributes);
-            Assert.AreEqual("cxy", delta[1].Insert[0]);
+            Assert.AreEqual("cxy", delta[1].Insert);
             Assert.AreEqual(true, delta[1].Attributes["bold"]);
         }
 

@@ -10,14 +10,19 @@ namespace Ycs
 {
     public interface IContent
     {
-        int Ref { get; }
         bool Countable { get; }
         int Length { get; }
-
         IReadOnlyList<object> GetContent();
         IContent Copy();
         IContent Splice(int offset);
         bool MergeWith(IContent right);
+    }
+
+    // TODO: [alekseyk] Refactor not to extend the interface.
+    internal interface IContentEx : IContent
+    {
+        int Ref { get; }
+
         void Integrate(Transaction transaction, Item item);
         void Delete(Transaction transaction);
         void Gc(StructStore store);

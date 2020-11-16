@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Ycs
 {
-    public class DSDecoderV2 : IDSDecoder
+    internal class DSDecoderV2 : IDSDecoder
     {
         private int _dsCurVal;
 
@@ -64,7 +64,7 @@ namespace Ycs
         }
     }
 
-    public sealed class UpdateDecoderV2 : DSDecoderV2, IUpdateDecoder
+    internal sealed class UpdateDecoderV2 : DSDecoderV2, IUpdateDecoder
     {
         /// <summary>
         /// List of cached keys. If the keys[id] does not exist, we read a new key from

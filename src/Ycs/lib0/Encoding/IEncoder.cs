@@ -6,7 +6,7 @@
 
 namespace Ycs
 {
-    public interface IEncoder<T>
+    internal interface IEncoder<T>
     {
         void Write(T value);
         byte[] ToArray();

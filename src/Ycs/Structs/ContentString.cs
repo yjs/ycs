@@ -11,13 +11,13 @@ using System.Text;
 
 namespace Ycs
 {
-    public class ContentString : IContent
+    public class ContentString : IContentEx
     {
         internal const int _ref = 4;
 
         private readonly List<object> _content;
 
-        public ContentString(string value)
+        internal ContentString(string value)
             : this(value.Cast<object>().ToList())
         {
             // Do nothing.
@@ -28,13 +28,12 @@ namespace Ycs
             _content = content;
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
 
         public bool Countable => true;
-
         public int Length => _content.Count;
 
-        public void AppendToBuilder(StringBuilder sb)
+        internal void AppendToBuilder(StringBuilder sb)
         {
             foreach (var c in _content)
             {
@@ -86,22 +85,22 @@ namespace Ycs
             return true;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             // Do nothing.
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             // Do nothing.
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             var sb = new StringBuilder(_content.Count - offset);
             for (int i = offset; i < _content.Count; i++)
@@ -113,7 +112,7 @@ namespace Ycs
             encoder.WriteString(str);
         }
 
-        public static ContentString Read(IUpdateDecoder decoder)
+        internal static ContentString Read(IUpdateDecoder decoder)
         {
             return new ContentString(decoder.ReadString());
         }

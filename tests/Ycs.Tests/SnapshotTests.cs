@@ -33,7 +33,7 @@ namespace Ycs
             var doc = new YDoc(new YDocOptions { Gc = false });
             var snap = doc.CreateSnapshot();
 
-            snap.Sv[9999] = 0;
+            snap.StateVector[9999] = 0;
             doc.GetArray().Insert(0, new[] { "world" });
 
             var docRestored = snap.RestoreDocument(doc);

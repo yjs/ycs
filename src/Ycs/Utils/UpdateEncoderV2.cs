@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Ycs
 {
-    public class DSEncoderV2 : IDSEncoder
+    internal class DSEncoderV2 : IDSEncoder
     {
         private int _dsCurVal;
         private MemoryStream _restStream;
@@ -82,7 +82,7 @@ namespace Ycs
         }
     }
 
-    public sealed class UpdateEncoderV2 : DSEncoderV2, IUpdateEncoder
+    internal sealed class UpdateEncoderV2 : DSEncoderV2, IUpdateEncoder
     {
         // Refers to the next unique key-identifier to be used.
         private int _keyClock;

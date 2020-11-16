@@ -115,7 +115,7 @@ namespace Ycs
 
                 // Compare texts.
                 CompareYText(Users[i].GetText("text"), Users[i + 1].GetText("text"));
-                var deltaStr = string.Join(null, userTextValues[i].Select(a => a.Insert != null && a.Insert[0] is string s ? s : string.Empty));
+                var deltaStr = string.Join(null, userTextValues[i].Select(a => a.Insert != null && a.Insert is string s ? s : string.Empty));
                 Assert.AreEqual(Users[i].GetText("text").ToString(), deltaStr);
 
                 // Compare maps.
@@ -233,7 +233,7 @@ namespace Ycs
             }
         }
 
-        protected void CompareStructStores(StructStore ss1, StructStore ss2)
+        internal void CompareStructStores(StructStore ss1, StructStore ss2)
         {
             Assert.AreEqual(ss1.Clients.Count, ss2.Clients.Count);
 
@@ -281,7 +281,7 @@ namespace Ycs
             }
         }
 
-        protected void CompareDS(DeleteSet ds1, DeleteSet ds2)
+        internal void CompareDS(DeleteSet ds1, DeleteSet ds2)
         {
             Assert.AreEqual(ds1.Clients.Count, ds2.Clients.Count);
 

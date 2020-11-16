@@ -25,7 +25,7 @@ namespace Ycs
     /// 8: Any content
     /// 9: Doc content
     /// </summary>
-    public static class EncodingUtils
+    internal static class EncodingUtils
     {
         public static IContent ReadItemContent(IUpdateDecoder decoder, byte info)
         {
@@ -36,8 +36,7 @@ namespace Ycs
                 case 1: // Deleted
                     return ContentDeleted.Read(decoder);
                 case 2: // JSON
-                    // TODO: Implement content types
-                    throw new NotImplementedException("ContentType is not implemented: " + info);
+                    return ContentJson.Read(decoder);
                 case 3: // Binary
                     return ContentBinary.Read(decoder);
                 case 4: // String
@@ -132,7 +131,6 @@ namespace Ycs
             }
         }
 
-        // TODO: Maybe return a new collection instead of in/out?
         public static IDictionary<int, List<AbstractStruct>> ReadClientStructRefs(IUpdateDecoder decoder, YDoc doc)
         {
             var clientRefs = new Dictionary<int, List<AbstractStruct>>();
@@ -208,14 +206,16 @@ namespace Ycs
 
         public static IDictionary<int, int> ReadStateVector(IDSDecoder decoder)
         {
-            var ss = new Dictionary<int, int>();
-            var ssLength = decoder.Reader.ReadVarUint();
+            var ssLength = (int)decoder.Reader.ReadVarUint();
+            var ss = new Dictionary<int, int>(ssLength);
+
             for (int i = 0; i < ssLength; i++)
             {
                 var client = (int)decoder.Reader.ReadVarUint();
                 var clock = (int)decoder.Reader.ReadVarUint();
                 ss[client] = clock;
             }
+
             return ss;
         }
 

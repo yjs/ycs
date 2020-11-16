@@ -12,17 +12,19 @@ namespace Ycs
 {
     public class StackItem
     {
-        public DeleteSet Ds;
         public IDictionary<int, int> BeforeState;
         public IDictionary<int, int> AfterState;
         // Use this to save and restore metadata like selection range.
         public IDictionary<string, object> Meta;
 
-        public StackItem(DeleteSet ds, IDictionary<int, int> beforeState, IDictionary<int, int> afterState)
+        internal DeleteSet DeleteSet;
+
+        internal StackItem(DeleteSet ds, IDictionary<int, int> beforeState, IDictionary<int, int> afterState)
         {
-            Ds = ds;
+            DeleteSet = ds;
             BeforeState = beforeState;
             AfterState = afterState;
+            // TODO: [alekseyk] Always needed?
             Meta = new Dictionary<string, object>();
         }
     }
@@ -104,7 +106,7 @@ namespace Ycs
             {
                 void clearItem(StackItem stackItem)
                 {
-                    stackItem.Ds.IterateDeletedStructs(tr, i =>
+                    stackItem.DeleteSet.IterateDeletedStructs(tr, i =>
                     {
                         if (i is Item item && _scope.Any(type => IsParentOf(type, item)))
                         {
@@ -219,7 +221,7 @@ namespace Ycs
             {
                 // Append change to last stack op.
                 var lastOp = stack.Peek();
-                lastOp.Ds = new DeleteSet(new List<DeleteSet>() { lastOp.Ds, transaction.DeleteSet });
+                lastOp.DeleteSet = new DeleteSet(new List<DeleteSet>() { lastOp.DeleteSet, transaction.DeleteSet });
                 lastOp.AfterState = afterState;
             }
             else
@@ -319,7 +321,7 @@ namespace Ycs
                         }
                     }
 
-                    stackItem.Ds.IterateDeletedStructs(transaction, str =>
+                    stackItem.DeleteSet.IterateDeletedStructs(transaction, str =>
                     {
                         var id = str.Id;
                         var clock = id.Clock;

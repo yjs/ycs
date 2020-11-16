@@ -23,7 +23,7 @@ namespace Ycs
 
         private InfoEnum _info;
 
-        public Item(ID id, AbstractStruct left, ID? leftOrigin, AbstractStruct right, ID? rightOrigin, object parent, string parentSub, IContent content)
+        internal Item(ID id, AbstractStruct left, ID? leftOrigin, AbstractStruct right, ID? rightOrigin, object parent, string parentSub, IContent content)
             : base(id, content.Length)
         {
             LeftOrigin = leftOrigin;
@@ -33,7 +33,7 @@ namespace Ycs
             Parent = parent;
             ParentSub = parentSub;
             Redone = null;
-            Content = content;
+            Content = (IContentEx)content;
 
             _info = content.Countable ? InfoEnum.Countable : 0;
         }
@@ -41,27 +41,27 @@ namespace Ycs
         /// <summary>
         /// The item that was originally to the left of this item.
         /// </summary>
-        public ID? LeftOrigin { get; set; }
+        public ID? LeftOrigin { get; internal set; }
 
         /// <summary>
         /// The item that is currently to the left of this item.
         /// </summary>
-        public AbstractStruct Left { get; set; }
+        public AbstractStruct Left { get; internal set; }
 
         /// <summary>
         /// The item that was originally to the right of this item.
         /// </summary>
-        public ID? RightOrigin { get; set; }
+        public ID? RightOrigin { get; internal set; }
 
         /// <summary>
         /// The item that is currently to the right of this item.
         /// </summary>
-        public AbstractStruct Right { get; set; }
+        public AbstractStruct Right { get; internal set; }
 
         /// <summary>
         /// AbstractType or ID.
         /// </summary>
-        public object Parent { get; set; }
+        public object Parent { get; internal set; }
 
         /// <summary>
         /// If the parent refers to this item with some kind of key (e.g. YMap).
@@ -69,19 +69,19 @@ namespace Ycs
         /// If 'parentSub = null', type._start is the list in which to insert to.
         /// Otherwise, it is 'parent._map'.
         /// </summary>
-        public string ParentSub { get; set; }
+        public string ParentSub { get; internal set; }
 
         /// <summary>
         /// Refers to the type that undid this operation.
         /// </summary>
-        public ID? Redone { get; set; }
+        public ID? Redone { get; internal set; }
 
-        public IContent Content { get; set; }
+        internal IContentEx Content { get; set; }
 
         public bool Marker
         {
             get => _info.HasFlag(InfoEnum.Marker);
-            set
+            internal set
             {
                 if (value)
                 {
@@ -100,7 +100,7 @@ namespace Ycs
         public bool Keep
         {
             get => _info.HasFlag(InfoEnum.Keep);
-            set
+            internal set
             {
                 if (value)
                 {
@@ -116,7 +116,7 @@ namespace Ycs
         public bool Countable
         {
             get => _info.HasFlag(InfoEnum.Countable);
-            set
+            internal set
             {
                 if (value)
                 {
@@ -168,7 +168,7 @@ namespace Ycs
             }
         }
 
-        public void MarkDeleted()
+        internal void MarkDeleted()
         {
             _info |= InfoEnum.Deleted;
         }
@@ -177,7 +177,7 @@ namespace Ycs
         /// Try to merge two items.
         /// </summary>
         /// https://github.com/yjs/yjs/blob/c2f0ca3faef731a93ba28f286ffafe0e1ea1a3aa/src/structs/Item.js#L557
-        public override bool MergeWith(AbstractStruct right)
+        internal override bool MergeWith(AbstractStruct right)
         {
             var rightItem = right as Item;
 
@@ -213,7 +213,7 @@ namespace Ycs
         /// <summary>
         /// Mark this item as Deleted.
         /// </summary>
-        public override void Delete(Transaction transaction)
+        internal override void Delete(Transaction transaction)
         {
             if (!Deleted)
             {
@@ -231,14 +231,14 @@ namespace Ycs
             }
         }
 
-        public override void Integrate(Transaction transaction, int offset)
+        internal override void Integrate(Transaction transaction, int offset)
         {
             if (offset > 0)
             {
                 Id = new ID(Id.Client, Id.Clock + offset);
                 Left = transaction.Doc.Store.GetItemCleanEnd(transaction, new ID(Id.Client, Id.Clock - 1));
                 LeftOrigin = (Left as Item)?.LastId;
-                Content = Content.Splice(offset);
+                Content = (IContentEx)Content.Splice(offset);
                 Length -= offset;
             }
 
@@ -410,7 +410,7 @@ namespace Ycs
         /// <summary>
         /// Returns the creator ClientID of the missing OP or define missing items and return null.
         /// </summary>
-        public override int? GetMissing(Transaction transaction, StructStore store)
+        internal override int? GetMissing(Transaction transaction, StructStore store)
         {
             if (LeftOrigin != null && LeftOrigin.Value.Client != Id.Client && LeftOrigin.Value.Clock >= store.GetState(LeftOrigin.Value.Client))
             {
@@ -476,7 +476,7 @@ namespace Ycs
             return null;
         }
 
-        public void Gc(StructStore store, bool parentGCd)
+        internal void Gc(StructStore store, bool parentGCd)
         {
             if (!Deleted)
             {
@@ -500,7 +500,7 @@ namespace Ycs
         /// This property does not persist when storing it into a database or when
         /// sending it to other peers.
         /// </summary>
-        public void KeepItemAndParents(bool value)
+        internal void KeepItemAndParents(bool value)
         {
             var item = this;
 
@@ -511,14 +511,14 @@ namespace Ycs
             }
         }
 
-        public bool IsVisible(Snapshot snap)
+        internal bool IsVisible(Snapshot snap)
         {
             return snap == null
                 ? !Deleted
-                : snap.Sv.ContainsKey(Id.Client) && snap.Sv[Id.Client] > Id.Clock && !snap.Ds.IsDeleted(Id);
+                : snap.StateVector.ContainsKey(Id.Client) && snap.StateVector[Id.Client] > Id.Clock && !snap.DeleteSet.IsDeleted(Id);
         }
 
-        public override void Write(IUpdateEncoder encoder, int offset)
+        internal override void Write(IUpdateEncoder encoder, int offset)
         {
             var origin = offset > 0 ? new ID(Id.Client, Id.Clock + offset - 1) : LeftOrigin;
             var rightOrigin = RightOrigin;

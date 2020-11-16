@@ -10,7 +10,7 @@ namespace Ycs
 {
     public class YArrayEvent : YEvent
     {
-        public YArrayEvent(YArray arr, Transaction transaction)
+        internal YArrayEvent(YArray arr, Transaction transaction)
             : base(arr, transaction)
         {
             // Do nothing.
@@ -53,7 +53,7 @@ namespace Ycs
             encoder.WriteTypeRef(YArrayRefId);
         }
 
-        public static YArray Read(IUpdateDecoder decoder)
+        internal static YArray Read(IUpdateDecoder decoder)
         {
             return new YArray();
         }

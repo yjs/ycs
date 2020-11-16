@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Ycs
 {
-    public static class BinaryWriterExtensions
+    internal static class BinaryWriterExtensions
     {
         /// <summary>
         /// Write two bytes as an unsigned unteger.

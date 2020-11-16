@@ -9,18 +9,19 @@ using System.Collections.Generic;
 
 namespace Ycs
 {
-    public class ContentEmbed : IContent
+    public class ContentEmbed : IContentEx
     {
         internal const int _ref = 5;
 
         public readonly object Embed;
 
-        public ContentEmbed(object embed)
+        internal ContentEmbed(object embed)
         {
             Embed = embed;
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
+
         public bool Countable => true;
         public int Length => 1;
 
@@ -38,27 +39,27 @@ namespace Ycs
             return false;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             // Do nothing.
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             // Do nothing.
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             encoder.WriteJson(Embed);
         }
 
-        public static ContentEmbed Read(IUpdateDecoder decoder)
+        internal static ContentEmbed Read(IUpdateDecoder decoder)
         {
             var content = decoder.ReadJson();
             return new ContentEmbed(content);

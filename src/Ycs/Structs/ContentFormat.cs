@@ -9,20 +9,21 @@ using System.Collections.Generic;
 
 namespace Ycs
 {
-    public class ContentFormat : IContent
+    public class ContentFormat : IContentEx
     {
         internal const int _ref = 6;
 
         public readonly string Key;
         public readonly object Value;
 
-        public ContentFormat(string key, object value)
+        internal ContentFormat(string key, object value)
         {
             Key = key;
             Value = value;
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
+
         public bool Countable => false;
         public int Length => 1;
 
@@ -37,29 +38,29 @@ namespace Ycs
             return false;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             // Search markers are currently unsupported for rich text documents.
             (item.Parent as YArrayBase)?.ClearSearchMarkers();
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             // Do nothing.
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             encoder.WriteKey(Key);
             encoder.WriteJson(Value);
         }
 
-        public static ContentFormat Read(IUpdateDecoder decoder)
+        internal static ContentFormat Read(IUpdateDecoder decoder)
         {
             var key = decoder.ReadKey();
             var value = decoder.ReadJson();

@@ -4,8 +4,6 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
-using System.Diagnostics;
-
 namespace Ycs
 {
     /// <summary>
@@ -14,7 +12,7 @@ namespace Ycs
     /// If the input occurs multiple times, we write it as a negative number. The <see cref="UintOptRleDecoder"/>
     /// then understands that it needs to read a count.
     /// </summary>
-    public sealed class UintOptRleEncoder : AbstractStreamEncoder<uint>
+    internal sealed class UintOptRleEncoder : AbstractStreamEncoder<uint>
     {
         private uint _state;
         private uint _count;

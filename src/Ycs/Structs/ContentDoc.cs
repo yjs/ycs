@@ -9,11 +9,11 @@ using System.Collections.Generic;
 
 namespace Ycs
 {
-    public class ContentDoc : IContent
+    internal class ContentDoc : IContentEx
     {
         internal const int _ref = 9;
 
-        public ContentDoc(YDoc doc)
+        internal ContentDoc(YDoc doc)
         {
             if (doc._item != null)
             {
@@ -39,7 +39,8 @@ namespace Ycs
             }
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
+
         public bool Countable => true;
         public int Length => 1;
 
@@ -60,7 +61,7 @@ namespace Ycs
             return false;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             // This needs to be reflected in doc.destroy as well.
             Doc._item = item;
@@ -72,7 +73,7 @@ namespace Ycs
             }
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             if (transaction.SubdocsAdded.Contains(Doc))
             {
@@ -84,19 +85,19 @@ namespace Ycs
             }
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             // 32 digits separated by hyphens, no braces.
             encoder.WriteString(Doc.Guid);
             Opts.Write(encoder, offset);
         }
 
-        public static ContentDoc Read(IUpdateDecoder decoder)
+        internal static ContentDoc Read(IUpdateDecoder decoder)
         {
             var guidStr = decoder.ReadString();
 

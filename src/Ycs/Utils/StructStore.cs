@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Ycs
 {
-    public sealed class StructStore
+    internal sealed class StructStore
     {
         private class PendingClientStructRef
         {
@@ -20,7 +20,7 @@ namespace Ycs
             public List<AbstractStruct> Refs { get; set; } = new List<AbstractStruct>(1);
         }
 
-        // TODO: [alekseyk] To private.
+        // TODO: [alekseyk] To private?
         public readonly IDictionary<int, List<AbstractStruct>> Clients = new Dictionary<int, List<AbstractStruct>>();
 
         /// <summary>

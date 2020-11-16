@@ -8,6 +8,7 @@ import { SyncProtocol } from '../util/syncProtocol.js';
 
 export class Home extends Component {
   static displayName = Home.name;
+  static maxInt = 2147483647;
 
   _ydoc = null;
   _ytext = null;
@@ -20,6 +21,8 @@ export class Home extends Component {
 
     this._mux = createMutex();
     this._ydoc = new Y.Doc();
+    // We need to limit the ID to max int for uint decoder to work.
+    this._ydoc.clientID = this._ydoc.clientID >= 0 && this._ydoc.client <= Home.maxInt ? this._ydoc.clientID : Math.floor(Math.random() * Math.floor(Home.maxInt));
     this._ytext = this._ydoc.getText("monaco");
 
     this.initConnection();
@@ -36,10 +39,12 @@ export class Home extends Component {
       .then(() => {
           this._connection.on('getMissing_result_v2', message => {
             SyncProtocol.readSyncStep2(this._ydoc, message, this);
+            console.log("text after restore: '" + this._ytext.toString() + "'");
           });
 
           this._connection.on('updatev2', message => {
             SyncProtocol.readSyncStep2(this._ydoc, message, this);
+            console.log("text after update: '" + this._ytext.toString() + "'");
           });
 
           // Always send step1 when connected.
@@ -49,6 +54,7 @@ export class Home extends Component {
 
     this._ydoc.on('updateV2', (update, origin) => {
       if (origin !== this || origin !== null) {
+        console.log("sending update");
         var encodedUpdate = EncodingUtils.byteArrayToString(update);
         this._connection.send("updateV2", encodedUpdate);
       }

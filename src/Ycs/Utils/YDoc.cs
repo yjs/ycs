@@ -22,7 +22,7 @@ namespace Ycs
         public IDictionary<string, string> Meta { get; set; } = null;
         public bool AutoLoad { get; set; } = false;
 
-        public YDocOptions Clone()
+        internal YDocOptions Clone()
         {
             return new YDocOptions
             {
@@ -34,7 +34,7 @@ namespace Ycs
             };
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        internal void Write(IUpdateEncoder encoder, int offset)
         {
             var dict = new Dictionary<string, object>();
             dict["gc"] = Gc;
@@ -49,7 +49,7 @@ namespace Ycs
             encoder.WriteAny(dict);
         }
 
-        public static YDocOptions Read(IUpdateDecoder decoder)
+        internal static YDocOptions Read(IUpdateDecoder decoder)
         {
             var dict = (IDictionary<string, object>)decoder.ReadAny();
 
@@ -76,15 +76,15 @@ namespace Ycs
         public bool AutoLoad => _opts.AutoLoad;
         public IDictionary<string, string> Meta => _opts.Meta;
 
-        public bool ShouldLoad;
-        public readonly IList<Transaction> _transactionCleanups;
-        public Transaction _transaction;
-        public readonly ISet<YDoc> Subdocs;
+        internal bool ShouldLoad;
+        internal readonly IList<Transaction> _transactionCleanups;
+        internal Transaction _transaction;
+        internal readonly ISet<YDoc> Subdocs;
 
         // If this document is a subdocument - a document integrated into another document - them _item is defined.
-        public Item _item;
+        internal Item _item;
 
-        public static int GenerateNewClientId()
+        internal static int GenerateNewClientId()
         {
             return new Random().Next(0, int.MaxValue);
         }
@@ -184,10 +184,10 @@ namespace Ycs
         public event EventHandler Destroyed;
         public event EventHandler<(ISet<YDoc> Loaded, ISet<YDoc> Added, ISet<YDoc> Removed)> SubdocsChanged;
 
-        // TODO: [alekseyk] setter to internal to be used in tests.
-        public int ClientId { get; set; }
+        public int ClientId { get; internal set; }
+        // TODO: [alekseyk] Needed?
         public IDictionary<string, AbstractType> Share { get; private set; }
-        public StructStore Store { get; private set; }
+        internal StructStore Store { get; private set; }
 
         /// <summary>
         /// Changes that happen inside of a transaction are bundled.
@@ -316,16 +316,6 @@ namespace Ycs
         }
 
         /// <summary>
-        /// Write all the document as a single update message. If you specify the satte of the remote client, it will only
-        /// write the operations that are missing.
-        /// </summary>
-        public void WriteStateAsUpdate(IUpdateEncoder encoder, IDictionary<int, int> targetStateVector)
-        {
-            EncodingUtils.WriteClientsStructs(encoder, Store, targetStateVector);
-            new DeleteSet(Store).Write(encoder);
-        }
-
-        /// <summary>
         /// Write all the document as a single update message that can be applied on the remote document.
         /// If you specify the state of the remote client, it will only write the operations that are missing.
         /// <br/>
@@ -341,16 +331,26 @@ namespace Ycs
             return encoder.ToArray();
         }
 
-        public void WriteStateVector(IDSEncoder encoder)
-        {
-            EncodingUtils.WriteStateVector(encoder, Store.GetStateVector());
-        }
-
         public byte[] EncodeStateVectorV2()
         {
             using var encoder = new DSEncoderV2();
             WriteStateVector(encoder);
             return encoder.ToArray();
+        }
+
+        /// <summary>
+        /// Write all the document as a single update message. If you specify the satte of the remote client, it will only
+        /// write the operations that are missing.
+        /// </summary>
+        internal void WriteStateAsUpdate(IUpdateEncoder encoder, IDictionary<int, int> targetStateVector)
+        {
+            EncodingUtils.WriteClientsStructs(encoder, Store, targetStateVector);
+            new DeleteSet(Store).Write(encoder);
+        }
+
+        internal void WriteStateVector(IDSEncoder encoder)
+        {
+            EncodingUtils.WriteStateVector(encoder, Store.GetStateVector());
         }
 
         internal void InvokeSubdocsChanged(ISet<YDoc> loaded, ISet<YDoc> added, ISet<YDoc> removed)
@@ -407,7 +407,7 @@ namespace Ycs
             }
         }
 
-        internal YDocOptions CreateDuplicateOptions()
+        internal YDocOptions CloneOptionsWithNewGuid()
         {
             var newOpts = _opts.Clone();
             newOpts.Guid = System.Guid.NewGuid().ToString("D");

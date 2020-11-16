@@ -16,7 +16,7 @@ namespace Ycs
     /// <br/>
     /// I.e. <c>[7, 8, 9, 10]</c> will be encoded as <c>[-7, 4]</c>, and <c>[1, 3, 5]</c> will be encoded as <c>[1, 3, 5]</c>.
     /// </summary>
-    public sealed class IncUintOptRleEncoder : AbstractStreamEncoder<uint>
+    internal sealed class IncUintOptRleEncoder : AbstractStreamEncoder<uint>
     {
         private uint _state;
         private uint _count;

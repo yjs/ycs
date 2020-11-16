@@ -26,7 +26,7 @@ namespace Ycs
     /// <br/>
     /// Use this encoder only when appropriate. In most cases, this is probably a bad idea.
     /// </summary>
-    public sealed class IntDiffOptRleEncoder : AbstractStreamEncoder<int>
+    internal sealed class IntDiffOptRleEncoder : AbstractStreamEncoder<int>
     {
         private int _state = 0;
         private int _diff = 0;

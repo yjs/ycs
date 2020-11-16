@@ -25,7 +25,7 @@ namespace Ycs
 
         private IList<Delta> _delta = null;
 
-        public YTextEvent(YText arr, Transaction transaction)
+        internal YTextEvent(YText arr, Transaction transaction)
             : base(arr, transaction)
         {
             // Do nothing.
@@ -71,7 +71,7 @@ namespace Ycs
                                         deleteLen = 0;
                                         break;
                                     case ChangeType.Insert:
-                                        op = new Delta { Insert = new[] { insert } };
+                                        op = new Delta { Insert = insert };
                                         if (currentAttributes?.Count > 0)
                                         {
                                             op.Attributes = new Dictionary<string, object>();
@@ -449,7 +449,7 @@ namespace Ycs
 
         // TODO: [alekseyk] To util class? Might not be needed here.
         internal const int YTextRefId = 2;
-        internal const string ChangeKey = "__ychange";
+        internal const string ChangeKey = "ychange";
 
         private IList<Action> _pending;
 
@@ -479,17 +479,16 @@ namespace Ycs
 
                         if (op.Insert != null)
                         {
-                            Debug.Assert(op.Insert.Count > 0);
-
                             // Quill assumes that the content starts with an empty paragraph.
                             // Yjs/Y.Text assumes that it starts empty. We always hide that
                             // there is a newline at the end of the content.
                             // If we omit this step, clients will see a different number of paragraphs,
                             // but nothing bad will happen.
-                            var insertStr = op.Insert[0] as string;
-                            var ins = (!sanitize && insertStr != null && i == delta.Count - 1 && curPos.Right == null && insertStr.EndsWith('\n')) ? insertStr.Substring(0, insertStr.Length - 1) : op.Insert[0];
+                            var insertStr = op.Insert as string;
+                            var ins = (!sanitize && insertStr != null && i == delta.Count - 1 && curPos.Right == null && insertStr.EndsWith('\n')) ? insertStr.Substring(0, insertStr.Length - 1) : op.Insert;
                             if (!(ins is string) || ((string)ins).Length > 0)
                             {
+                                // TODO: Null attributes by default to avoid unnecessary allocations?
                                 InsertText(tr, curPos, ins, op.Attributes ?? new Dictionary<string, object>());
                             }
                         }
@@ -533,7 +532,7 @@ namespace Ycs
                         attributes[kvp.Key] = kvp.Value;
                     }
 
-                    var op = new Delta { Insert = new List<object> { str } };
+                    var op = new Delta { Insert = str };
                     if (addAttributes)
                     {
                         op.Attributes = attributes;
@@ -598,7 +597,7 @@ namespace Ycs
                                 break;
                             case ContentEmbed ce:
                                 packStr();
-                                var op = new Delta { Insert = new List<object> { ce.Embed } };
+                                var op = new Delta { Insert = ce.Embed };
                                 if (currentAttributes.Count > 0)
                                 {
                                     var attrs = new Dictionary<string, object>();
@@ -629,7 +628,6 @@ namespace Ycs
             return ops;
         }
 
-        // TODO: [alekseyk] IDictionary<string, object> - to TextAttributes class.
         public void Insert(int index, string text, IDictionary<string, object> attributes = null)
         {
             if (string.IsNullOrEmpty(text))
@@ -728,6 +726,7 @@ namespace Ycs
 
         public override string ToString()
         {
+            // TODO: [aleskeyk] Can use cached builder.
             var sb = new StringBuilder(Length);
 
             var n = _start;

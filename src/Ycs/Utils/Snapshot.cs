@@ -13,13 +13,13 @@ namespace Ycs
 {
     public sealed class Snapshot : IEquatable<Snapshot>
     {
-        public readonly DeleteSet Ds;
-        public readonly IDictionary<int, int> Sv;
+        internal readonly DeleteSet DeleteSet;
+        internal readonly IDictionary<int, int> StateVector;
 
         internal Snapshot(DeleteSet ds, IDictionary<int, int> stateMap)
         {
-            Ds = ds;
-            Sv = stateMap;
+            DeleteSet = ds;
+            StateVector = stateMap;
         }
 
         public YDoc RestoreDocument(YDoc originDoc, YDocOptions opts = null)
@@ -33,11 +33,11 @@ namespace Ycs
             using var encoder = new UpdateEncoderV2();
             originDoc.Transact(tr =>
             {
-                int size = Sv.Count(kvp => kvp.Value /* clock */ > 0);
+                int size = StateVector.Count(kvp => kvp.Value /* clock */ > 0);
                 encoder.RestWriter.WriteVarUint((uint)size);
 
                 // Splitting the structs before writing them to the encoder.
-                foreach (var kvp in Sv)
+                foreach (var kvp in StateVector)
                 {
                     int client = kvp.Key;
                     int clock = kvp.Value;
@@ -68,10 +68,10 @@ namespace Ycs
                     }
                 }
 
-                Ds.Write(encoder);
+                DeleteSet.Write(encoder);
             });
 
-            var newDoc = new YDoc(opts ?? originDoc.CreateDuplicateOptions());
+            var newDoc = new YDoc(opts ?? originDoc.CloneOptionsWithNewGuid());
             newDoc.ApplyUpdateV2(encoder.ToArray(), transactionOrigin: "snapshot");
             return newDoc;
         }
@@ -83,10 +83,10 @@ namespace Ycs
                 return false;
             }
 
-            var ds1 = Ds.Clients;
-            var ds2 = other.Ds.Clients;
-            var sv1 = Sv;
-            var sv2 = other.Sv;
+            var ds1 = DeleteSet.Clients;
+            var ds2 = other.DeleteSet.Clients;
+            var sv1 = StateVector;
+            var sv2 = other.StateVector;
 
             if (sv1.Count != sv2.Count || ds1.Count != ds2.Count)
             {
@@ -133,8 +133,8 @@ namespace Ycs
         public byte[] EncodeSnapshotV2()
         {
             using var encoder = new DSEncoderV2();
-            Ds.Write(encoder);
-            EncodingUtils.WriteStateVector(encoder, Sv);
+            DeleteSet.Write(encoder);
+            EncodingUtils.WriteStateVector(encoder, StateVector);
             return encoder.ToArray();
         }
 

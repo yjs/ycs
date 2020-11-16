@@ -23,10 +23,10 @@ namespace Ycs
 
         public abstract bool Deleted { get; }
 
-        public abstract bool MergeWith(AbstractStruct right);
-        public abstract void Delete(Transaction transaction);
-        public abstract void Integrate(Transaction transaction, int offset);
-        public abstract int? GetMissing(Transaction transaction, StructStore store);
-        public abstract void Write(IUpdateEncoder encoder, int offset);
+        internal abstract bool MergeWith(AbstractStruct right);
+        internal abstract void Delete(Transaction transaction);
+        internal abstract void Integrate(Transaction transaction, int offset);
+        internal abstract int? GetMissing(Transaction transaction, StructStore store);
+        internal abstract void Write(IUpdateEncoder encoder, int offset);
     }
 }

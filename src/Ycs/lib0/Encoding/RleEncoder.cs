@@ -14,7 +14,7 @@ namespace Ycs
     /// <br/>
     /// It was originally used for image compression.
     /// </summary>
-    public sealed class RleEncoder : AbstractStreamEncoder<byte>
+    internal sealed class RleEncoder : AbstractStreamEncoder<byte>
     {
         private byte? _state = null;
         private uint _count = 0;

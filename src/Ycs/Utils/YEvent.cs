@@ -19,8 +19,7 @@ namespace Ycs
 
     public class Delta
     {
-        // TODO: [alekseyk] Can Insert be just an object, not a list?
-        public IList<object> Insert;
+        public object Insert;
         public int? Delete;
         public int? Retain;
         public IDictionary<string, object> Attributes;
@@ -43,7 +42,7 @@ namespace Ycs
     {
         private ChangesCollection _changes = null;
 
-        public YEvent(AbstractType target, Transaction transaction)
+        internal YEvent(AbstractType target, Transaction transaction)
         {
             Target = target;
             CurrentTarget = target;
@@ -60,12 +59,12 @@ namespace Ycs
         /// <summary>
         /// Check if a struct is added by this event.
         /// </summary>
-        public bool Deletes(AbstractStruct str)
+        internal bool Deletes(AbstractStruct str)
         {
             return Transaction.DeleteSet.IsDeleted(str.Id);
         }
 
-        public bool Adds(AbstractStruct str)
+        internal bool Adds(AbstractStruct str)
         {
             return !Transaction.BeforeState.TryGetValue(str.Id.Client, out int clock) || str.Id.Clock >= clock;
         }
@@ -136,11 +135,7 @@ namespace Ycs
                                     lastOp = new Delta { Insert = new List<object>(1) };
                                 }
 
-                                foreach (var contentPart in item.Content.GetContent())
-                                {
-                                    lastOp.Insert.Add(contentPart);
-                                }
-
+                                (lastOp.Insert as List<object>).AddRange(item.Content.GetContent());
                                 added.Add(item);
                             }
                             else

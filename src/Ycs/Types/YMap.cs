@@ -18,7 +18,7 @@ namespace Ycs
     {
         public readonly ISet<string> KeysChanged;
 
-        public YMapEvent(YMap map, Transaction transaction, ISet<string> subs)
+        internal YMapEvent(YMap map, Transaction transaction, ISet<string> subs)
             : base(map, transaction)
         {
             KeysChanged = subs;
@@ -186,6 +186,7 @@ namespace Ycs
             return false;
         }
 
+        // TODO: [alekseyk] Needed for xml?
         private object TypeMapGetSnapshot(string key, Snapshot snapshot)
         {
             if (!_map.TryGetValue(key, out var v))
@@ -193,7 +194,7 @@ namespace Ycs
                 v = null;
             }
 
-            while (v != null && (!snapshot.Sv.ContainsKey(v.Id.Client) || v.Id.Clock >= snapshot.Sv[v.Id.Client]))
+            while (v != null && (!snapshot.StateVector.ContainsKey(v.Id.Client) || v.Id.Clock >= snapshot.StateVector[v.Id.Client]))
             {
                 v = v.Left as Item;
             }

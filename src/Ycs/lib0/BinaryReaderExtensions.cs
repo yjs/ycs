@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Ycs
 {
-    public static class BinaryReaderExtensinos
+    internal static class BinaryReaderExtensinos
     {
         /// <summary>
         /// Read 2 bytes as unsigned integer.
@@ -65,7 +65,7 @@ namespace Ycs
         /// * Values &lt; 2^7 are stored in one byte.
         /// * Values &lt; 2^14 are stored in two bytes.
         /// </summary>
-        public static (int value, int sign) ReadVarInt(this BinaryReader reader)
+        public static (int Value, int Sign) ReadVarInt(this BinaryReader reader)
         {
             byte r = reader.ReadByte();
             uint num = r & Bits.Bits6;
@@ -148,10 +148,9 @@ namespace Ycs
                 case 123: // Float64
                     return BitConverter.Int64BitsToDouble(reader.ReadInt64());
                 case 124: // Float32
-                    //return BitConverter.Int32BitsToSingle(reader.ReadInt32());
-                    throw new NotImplementedException("Needs unsafe or netstandard2.1");
+                    return BitConverter.Int32BitsToSingle(reader.ReadInt32());
                 case 125: // integer
-                    return reader.ReadVarInt().value;
+                    return reader.ReadVarInt().Value;
                 case 126: // null
                 case 127: // undefined
                     return null;
@@ -159,10 +158,10 @@ namespace Ycs
                     return reader.ReadVarUint8Array();
                 case 117: // Array<object>
                     {
-                        uint len = reader.ReadVarUint();
-                        var arr = new List<object>();
+                        var len = (int)reader.ReadVarUint();
+                        var arr = new List<object>(len);
 
-                        for (uint i = 0; i < len; i++)
+                        for (int i = 0; i < len; i++)
                         {
                             arr.Add(reader.ReadAny());
                         }
@@ -171,10 +170,10 @@ namespace Ycs
                     }
                 case 118: // object (Dictionary<string, object>)
                     {
-                        uint len = reader.ReadVarUint();
-                        var obj = new Dictionary<string, object>();
+                        var len = (int)reader.ReadVarUint();
+                        var obj = new Dictionary<string, object>(len);
 
-                        for (uint i = 0; i < len; i++)
+                        for (int i = 0; i < len; i++)
                         {
                             var key = reader.ReadVarString();
                             obj[key] = reader.ReadAny();
@@ -183,7 +182,7 @@ namespace Ycs
                         return obj;
                     }
                 default:
-                    Debug.Assert(false);
+                    Debug.Assert(false, $"Unknown object type: {type}");
                     return null;
             }
         }

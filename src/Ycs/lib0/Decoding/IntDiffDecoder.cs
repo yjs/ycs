@@ -4,25 +4,24 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
+using System.IO;
+
 namespace Ycs
 {
-    /// <summary>
-    /// Basic diff encoder using variable length encoding.
-    /// Encodes the values <c>[3, 1100, 1101, 1050, 0]</c> to <c>[3, 1097, 1, -51, -1050]</c>.
-    /// </summary>
-    public sealed class IntDiffEncoder : AbstractStreamEncoder<int>
+    internal sealed class IntDiffDecoder : AbstractStreamDecoder<int>
     {
         private int _state;
 
-        public IntDiffEncoder(int start)
+        public IntDiffDecoder(Stream input, int start, bool leaveOpen = false)
+            : base(input, leaveOpen)
         {
             _state = start;
         }
 
-        public override void Write(int value)
+        public override int Read()
         {
-            Writer.WriteVarInt(value - _state);
-            _state = value;
+            _state += Reader.ReadVarInt().Value;
+            return _state;
         }
     }
 }

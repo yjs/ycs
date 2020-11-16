@@ -11,13 +11,13 @@ using System.Linq;
 
 namespace Ycs
 {
-    public class ContentAny : IContent
+    public class ContentAny : IContentEx
     {
         internal const int _ref = 8;
 
         private List<object> _content;
 
-        public ContentAny(IEnumerable content)
+        internal ContentAny(IEnumerable content)
         {
             _content = new List<object>();
             foreach (var v in content)
@@ -26,7 +26,7 @@ namespace Ycs
             }
         }
 
-        public ContentAny(IEnumerable<object> content)
+        internal ContentAny(IEnumerable<object> content)
             : this(content.ToList())
         {
             // Do nothing.
@@ -37,9 +37,10 @@ namespace Ycs
             _content = content;
         }
 
-        public int Ref => _ref;
         public bool Countable => true;
         public int Length => _content.Count;
+
+        int IContentEx.Ref => _ref;
 
         public IReadOnlyList<object> GetContent() => _content.AsReadOnly();
 
@@ -59,22 +60,22 @@ namespace Ycs
             return true;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             // Do nothing.
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             // Do nothing.
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             int length = _content.Count;
             encoder.WriteLength(length - offset);
@@ -86,7 +87,7 @@ namespace Ycs
             }
         }
 
-        public static ContentAny Read(IUpdateDecoder decoder)
+        internal static ContentAny Read(IUpdateDecoder decoder)
         {
             var length = decoder.ReadLength();
             var cs = new List<object>(length);

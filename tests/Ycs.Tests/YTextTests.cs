@@ -45,7 +45,7 @@ namespace Ycs
 
             text0.Insert(0, "abc");
             Assert.AreEqual("abc", text0.ToString());
-            Assert.AreEqual("abc", delta[0].Insert[0]);
+            Assert.AreEqual("abc", delta[0].Insert);
             delta = null;
 
             text0.Delete(0, 1);
@@ -85,14 +85,14 @@ namespace Ycs
 
             var text0Delta = text0.ToDelta();
             Assert.AreEqual(1, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "abc" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("abc", text0Delta[0].Insert);
             Assert.AreEqual(true, text0Delta[0].Attributes["bold"]);
 
             text0.Delete(0, 1);
             Assert.AreEqual("bc", text0.ToString());
             text0Delta = text0.ToDelta();
             Assert.AreEqual(1, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "bc" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("bc", text0Delta[0].Insert);
             Assert.AreEqual(true, text0Delta[0].Attributes["bold"]);
             Assert.AreEqual(2, delta?.Count);
             Assert.AreEqual(1, delta[0].Delete);
@@ -103,7 +103,7 @@ namespace Ycs
             Assert.AreEqual("b", text0.ToString());
             text0Delta = text0.ToDelta();
             Assert.AreEqual(1, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "b" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("b", text0Delta[0].Insert);
             Assert.AreEqual(true, text0Delta[0].Attributes["bold"]);
             Assert.AreEqual(2, delta?.Count);
             Assert.AreEqual(1, delta[0].Retain);
@@ -114,10 +114,10 @@ namespace Ycs
             Assert.AreEqual("zb", text0.ToString());
             text0Delta = text0.ToDelta();
             Assert.AreEqual(1, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "zb" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("zb", text0Delta[0].Insert);
             Assert.AreEqual(true, text0Delta[0].Attributes["bold"]);
             Assert.AreEqual(2, delta?.Count);
-            CollectionAssert.AreEqual(new[] { "z" }, (ICollection)delta[0].Insert);
+            Assert.AreEqual("z", delta[0].Insert);
             Assert.AreEqual(true, delta[0].Attributes["bold"]);
             Assert.AreEqual(1, delta[1].Retain);
             delta = null;
@@ -129,12 +129,12 @@ namespace Ycs
             Assert.AreEqual("yzb", text0.ToString());
             text0Delta = text0.ToDelta();
             Assert.AreEqual(2, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "y" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("y", text0Delta[0].Insert);
             Assert.IsNull(text0Delta[0].Attributes);
-            CollectionAssert.AreEqual(new[] { "zb" }, (ICollection)text0Delta[1].Insert);
+            Assert.AreEqual("zb", text0Delta[1].Insert);
             Assert.AreEqual(true, text0Delta[1].Attributes["bold"]);
             Assert.AreEqual(2, delta?.Count);
-            CollectionAssert.AreEqual(new[] { "y" }, (ICollection)delta[0].Insert);
+            Assert.AreEqual("y", delta[0].Insert);
             Assert.IsNull(delta[0].Attributes);
             Assert.AreEqual(2, delta[1].Retain);
             delta = null;
@@ -143,9 +143,9 @@ namespace Ycs
             Assert.AreEqual("yzb", text0.ToString());
             text0Delta = text0.ToDelta();
             Assert.AreEqual(2, text0Delta?.Count);
-            CollectionAssert.AreEqual(new[] { "yz" }, (ICollection)text0Delta[0].Insert);
+            Assert.AreEqual("yz", text0Delta[0].Insert);
             Assert.IsNull(text0Delta[0].Attributes);
-            CollectionAssert.AreEqual(new[] { "b" }, (ICollection)text0Delta[1].Insert);
+            Assert.AreEqual("b", text0Delta[1].Insert);
             Assert.AreEqual(true, text0Delta[1].Attributes["bold"]);
             Assert.AreEqual(3, delta?.Count);
             Assert.AreEqual(1, delta[0].Retain);
@@ -166,13 +166,13 @@ namespace Ycs
             {
                 new Delta
                 {
-                    Insert = new List<object> { new Dictionary<string, string> { { "linebreak", "s" } } }
+                    Insert = new Dictionary<string, string> { { "linebreak", "s" } }
                 }
             });
 
             var delta = text0.ToDelta();
             Assert.AreEqual(1, delta?.Count);
-            Assert.AreEqual("s", (delta[0].Insert[0] as IDictionary<string, string>)["linebreak"]);
+            Assert.AreEqual("s", (delta[0].Insert as IDictionary<string, string>)["linebreak"]);
         }
 
         [TestMethod]
@@ -186,7 +186,7 @@ namespace Ycs
             {
                 new Delta
                 {
-                    Insert = new List<object> { "abcd" }
+                    Insert = "abcd"
                 }
             });
 
@@ -200,7 +200,7 @@ namespace Ycs
                 },
                 new Delta
                 {
-                    Insert = new List<object>{ "x" }
+                    Insert = "x"
                 },
                 new Delta
                 {
@@ -222,7 +222,7 @@ namespace Ycs
                 },
                 new Delta
                 {
-                    Insert = new List<object> { "x" }
+                    Insert = "x"
                 },
                 new Delta
                 {
@@ -232,23 +232,23 @@ namespace Ycs
 
             var state1 = text0.ToDelta(snapshot1);
             Assert.AreEqual(1, state1?.Count);
-            Assert.AreEqual("abcd", state1[0].Insert[0]);
+            Assert.AreEqual("abcd", state1[0].Insert);
 
             var state2 = text0.ToDelta(snapshot2);
             Assert.AreEqual(1, state2?.Count);
-            Assert.AreEqual("axcd", state2[0].Insert[0]);
+            Assert.AreEqual("axcd", state2[0].Insert);
 
             var stateDiff = text0.ToDelta(snapshot2, snapshot1);
             Assert.AreEqual(4, stateDiff.Count);
-            Assert.AreEqual("a", stateDiff[0].Insert[0]);
+            Assert.AreEqual("a", stateDiff[0].Insert);
 
-            Assert.AreEqual("x", stateDiff[1].Insert[0]);
-            Assert.AreEqual(YText.YTextChangeType.Added, (stateDiff[1].Attributes["__ychange"] as YText.YTextChangeAttributes).Type);
+            Assert.AreEqual("x", stateDiff[1].Insert);
+            Assert.AreEqual(YText.YTextChangeType.Added, (stateDiff[1].Attributes["ychange"] as YText.YTextChangeAttributes).Type);
 
-            Assert.AreEqual("b", stateDiff[2].Insert[0]);
-            Assert.AreEqual(YText.YTextChangeType.Removed, (stateDiff[2].Attributes["__ychange"] as YText.YTextChangeAttributes).Type);
+            Assert.AreEqual("b", stateDiff[2].Insert);
+            Assert.AreEqual(YText.YTextChangeType.Removed, (stateDiff[2].Attributes["ychange"] as YText.YTextChangeAttributes).Type);
 
-            Assert.AreEqual("cd", stateDiff[3].Insert[0]);
+            Assert.AreEqual("cd", stateDiff[3].Insert);
             Assert.IsNull(stateDiff[3].Attributes);
         }
 
@@ -263,7 +263,7 @@ namespace Ycs
             {
                 new Delta
                 {
-                    Insert = new List<object> { "abcd" }
+                    Insert = "abcd"
                 }
             });
 
@@ -277,13 +277,13 @@ namespace Ycs
                 },
                 new Delta
                 {
-                    Insert = new List<object>{ "e" }
+                    Insert = "e"
                 }
             });
 
             var state1 = text0.ToDelta(snapshot1);
             Assert.AreEqual(1, state1?.Count);
-            Assert.AreEqual("abcd", state1[0].Insert[0]);
+            Assert.AreEqual("abcd", state1[0].Insert);
         }
 
         [TestMethod]
@@ -298,13 +298,13 @@ namespace Ycs
             var delta = text0.ToDelta();
             Assert.AreEqual(3, delta?.Count);
 
-            Assert.AreEqual("a", delta[0].Insert[0]);
+            Assert.AreEqual("a", delta[0].Insert);
             Assert.AreEqual(true, delta[0].Attributes["bold"]);
 
-            CollectionAssert.AreEqual(new[] { "this", "is", "embed" }, (ICollection)delta[1].Insert[0]);
+            CollectionAssert.AreEqual(new[] { "this", "is", "embed" }, (ICollection)delta[1].Insert);
             Assert.AreEqual(100, delta[1].Attributes["width"]);
 
-            Assert.AreEqual("b", delta[2].Insert[0]);
+            Assert.AreEqual("b", delta[2].Insert);
             Assert.AreEqual(true, delta[2].Attributes["bold"]);
         }
 
@@ -320,13 +320,13 @@ namespace Ycs
             var delta = text0.ToDelta();
             Assert.AreEqual(3, delta?.Count);
 
-            Assert.AreEqual("a", delta[0].Insert[0]);
+            Assert.AreEqual("a", delta[0].Insert);
             Assert.AreEqual(true, delta[0].Attributes["bold"]);
 
-            CollectionAssert.AreEqual(new[] { "this", "is", "embed" }, (ICollection)delta[1].Insert[0]);
+            CollectionAssert.AreEqual(new[] { "this", "is", "embed" }, (ICollection)delta[1].Insert);
             Assert.IsNull(delta[1].Attributes);
 
-            Assert.AreEqual("b", delta[2].Insert[0]);
+            Assert.AreEqual("b", delta[2].Insert);
             Assert.AreEqual(true, delta[2].Attributes["bold"]);
         }
 
@@ -601,12 +601,12 @@ namespace Ycs
 
                     ops.Add(new Delta
                     {
-                        Insert = new List<object> { text }
+                        Insert = text
                     });
 
                     ops.Add(new Delta
                     {
-                        Insert = new List<object> { "\n" },
+                        Insert = "\n",
                         Attributes = new Dictionary<string, object> { { "code-block", true } }
                     });
 

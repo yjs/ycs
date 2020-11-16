@@ -71,12 +71,12 @@ namespace Ycs
         [TestMethod]
         public void TestVarIntEncoding()
         {
-            DoTestEncoding<int>("VarInt 1 byte", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, -42);
-            DoTestEncoding<int>("VarInt 2 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, -(1 << 9 | 3));
-            DoTestEncoding<int>("VarInt 3 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, -(1 << 17 | 1 << 9 | 3));
-            DoTestEncoding<int>("VarInt 4 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, -(1 << 25 | 1 << 17 | 1 << 9 | 3));
-            DoTestEncoding<int>("VarInt of -691529286", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, -691_529_286);
-            DoTestEncoding<int>("VarInt of 64 (-0)", (w, v) => w.WriteVarInt(v, treatZeroAsNegative: true), (r) => r.ReadVarInt().value, 0);
+            DoTestEncoding<int>("VarInt 1 byte", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -42);
+            DoTestEncoding<int>("VarInt 2 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 9 | 3));
+            DoTestEncoding<int>("VarInt 3 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 17 | 1 << 9 | 3));
+            DoTestEncoding<int>("VarInt 4 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 25 | 1 << 17 | 1 << 9 | 3));
+            DoTestEncoding<int>("VarInt of -691529286", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -691_529_286);
+            DoTestEncoding<int>("VarInt of 64 (-0)", (w, v) => w.WriteVarInt(v, treatZeroAsNegative: true), (r) => r.ReadVarInt().Value, 0);
         }
 
         [TestMethod]
@@ -97,8 +97,8 @@ namespace Ycs
             using (var reader = new BinaryReader(inputStream, Encoding.UTF8, leaveOpen: true))
             {
                 var v = reader.ReadVarInt();
-                Assert.AreEqual(0, v.value);
-                Assert.AreEqual(-1, v.sign);
+                Assert.AreEqual(0, v.Value);
+                Assert.AreEqual(-1, v.Sign);
             }
         }
 
@@ -120,7 +120,7 @@ namespace Ycs
             for (int i = 0; i < 10; i++)
             {
                 var n = rand.Next(0, int.MaxValue);
-                DoTestEncoding<int>($"VarInt of {n}", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().value, n);
+                DoTestEncoding<int>($"VarInt of {n}", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, n);
             }
         }
 

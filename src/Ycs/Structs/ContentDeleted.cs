@@ -10,16 +10,16 @@ using System.Diagnostics;
 
 namespace Ycs
 {
-    public class ContentDeleted : IContent
+    internal class ContentDeleted : IContentEx
     {
         internal const int _ref = 1;
 
-        public ContentDeleted(int length)
+        internal ContentDeleted(int length)
         {
             Length = length;
         }
 
-        public int Ref => _ref;
+        int IContentEx.Ref => _ref;
         public bool Countable => false;
 
         public int Length { get; private set; }
@@ -42,28 +42,28 @@ namespace Ycs
             return true;
         }
 
-        public void Integrate(Transaction transaction, Item item)
+        void IContentEx.Integrate(Transaction transaction, Item item)
         {
             transaction.DeleteSet.Add(item.Id.Client, item.Id.Clock, Length);
             item.MarkDeleted();
         }
 
-        public void Delete(Transaction transaction)
+        void IContentEx.Delete(Transaction transaction)
         {
             // Do nothing.
         }
 
-        public void Gc(StructStore store)
+        void IContentEx.Gc(StructStore store)
         {
             // Do nothing.
         }
 
-        public void Write(IUpdateEncoder encoder, int offset)
+        void IContentEx.Write(IUpdateEncoder encoder, int offset)
         {
             encoder.WriteLength(Length - offset);
         }
 
-        public static ContentDeleted Read(IUpdateDecoder decoder)
+        internal static ContentDeleted Read(IUpdateDecoder decoder)
         {
             var length = decoder.ReadLength();
             return new ContentDeleted(length);

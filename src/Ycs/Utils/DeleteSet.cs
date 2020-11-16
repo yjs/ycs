@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 
 namespace Ycs
 {
@@ -20,7 +19,7 @@ namespace Ycs
     /// - We read a DeleteSet as a apart of sync/update message. In this case the DeleteSet is already
     ///   sorted and merged.
     /// </summary>
-    public class DeleteSet
+    internal class DeleteSet
     {
         public struct DeleteItem
         {

@@ -5,7 +5,6 @@
 // ------------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -16,7 +15,7 @@ namespace Ycs
     /// <br/>
     /// The lengths are encoded using the <see cref="UintOptRleEncoder"/>.
     /// </summary>
-    public sealed class StringEncoder : IEncoder<string>, IDisposable
+    internal sealed class StringEncoder : IEncoder<string>, IDisposable
     {
         private StringBuilder _sb = new StringBuilder();
         private UintOptRleEncoder _lengthEncoder = new UintOptRleEncoder();

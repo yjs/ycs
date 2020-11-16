@@ -14,7 +14,7 @@ namespace Ycs
     /// <br/>
     /// Encodes values <c>[1, 1, 1, 2, 3, 4, 5, 6]</c> as <c>[1, 1, 0, 2, 1, 5]</c>.
     /// </summary>
-    public sealed class RleIntDiffEncoder : AbstractStreamEncoder<int>
+    internal sealed class RleIntDiffEncoder : AbstractStreamEncoder<int>
     {
         private int _state;
         private uint _count;

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Ycs
 {
-    public sealed class StringDecoder : IDecoder<string>
+    internal sealed class StringDecoder : IDecoder<string>
     {
         private UintOptRleDecoder _decoder;
         private string _value;

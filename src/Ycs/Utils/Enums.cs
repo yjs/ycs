@@ -9,7 +9,7 @@ namespace Ycs
     /// <summary>
     /// N-th bit activated.
     /// </summary>
-    public static class Bit
+    internal static class Bit
     {
         public const uint Bit1 = 1 << 0;
         public const uint Bit2 = 1 << 1;
@@ -48,7 +48,7 @@ namespace Ycs
     /// <summary>
     /// First N bits activated.
     /// </summary>
-    public static class Bits
+    internal static class Bits
     {
         public const uint Bits0 = (1 << 0) - 1;
         public const uint Bits1 = (1 << 1) - 1;

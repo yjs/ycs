@@ -8,39 +8,43 @@ using System.IO;
 
 namespace Ycs
 {
-    public sealed class IncUintOptRleDecoder : AbstractStreamDecoder<uint>
+    internal sealed class IntDiffOptRleDecoder : AbstractStreamDecoder<int>
     {
-        private uint _state;
+        private int _state;
         private uint _count;
+        private int _diff;
 
-        public IncUintOptRleDecoder(Stream input, bool leaveOpen = false)
+        public IntDiffOptRleDecoder(Stream input, bool leaveOpen = false)
             : base(input, leaveOpen)
         {
             // Do nothing.
         }
 
-        public override uint Read()
+        public override int Read()
         {
             if (_count == 0)
             {
-                var v = Reader.ReadVarInt();
+                int diff = Reader.ReadVarInt().Value;
 
-                // If the sign is negative, we read the count too; otherwise. count is 1.
-                bool isNegative = v.sign < 0;
-                if (isNegative)
+                // If the first bit is set, we read more data.
+                bool hasCount = (diff & Bit.Bit1) > 0;
+
+                if (diff < 0)
                 {
-                    _state = (uint)(-v.value);
-                    _count = Reader.ReadVarUint() + 2;
+                    _diff = -((-diff) >> 1);
                 }
                 else
                 {
-                    _state = (uint)v.value;
-                    _count = 1;
+                    _diff = diff >> 1;
                 }
+
+                _count = hasCount ? Reader.ReadVarUint() + 2 : 1;
             }
 
+            _state += _diff;
             _count--;
-            return _state++;
+
+            return _state;
         }
     }
 }

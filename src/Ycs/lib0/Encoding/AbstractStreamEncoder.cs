@@ -10,28 +10,39 @@ using System.Text;
 
 namespace Ycs
 {
-    public abstract class AbstractStreamDecoder<T> : IDecoder<T>
+    internal abstract class AbstractStreamEncoder<T> : IEncoder<T>, IDisposable
     {
-        private Stream _stream;
+        private MemoryStream _stream;
         private bool _disposed;
 
-        protected AbstractStreamDecoder(Stream input, bool leaveOpen = false)
+        public AbstractStreamEncoder()
         {
-            _stream = input;
-            Reader = new BinaryReader(_stream, Encoding.UTF8, leaveOpen: leaveOpen);
+            _stream = new MemoryStream();
+            Writer = new BinaryWriter(_stream, Encoding.UTF8, leaveOpen: false);
         }
 
-        protected BinaryReader Reader { get; private set; }
-
-        protected bool HasContent => _stream.Position < _stream.Length;
+        protected BinaryWriter Writer { get; private set; }
 
         /// <inheritdoc/>
-        public abstract T Read();
-
         public void Dispose()
         {
             Dispose(disposing: true);
             System.GC.SuppressFinalize(this);
+        }
+
+        /// <inheritdoc/>
+        public abstract void Write(T value);
+
+        /// <inheritdoc/>
+        public virtual byte[] ToArray()
+        {
+            Flush();
+            return _stream.ToArray();
+        }
+
+        protected virtual void Flush()
+        {
+            Writer.Flush();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -40,12 +51,13 @@ namespace Ycs
             {
                 if (disposing)
                 {
-                    Reader.Dispose();
+                    Writer.Dispose();
                     _stream.Dispose();
                 }
 
-                Reader = null;
+                Writer = null;
                 _stream = null;
+
                 _disposed = true;
             }
         }

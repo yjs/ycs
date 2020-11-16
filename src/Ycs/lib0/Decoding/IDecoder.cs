@@ -8,7 +8,7 @@ using System;
 
 namespace Ycs
 {
-    public interface IDecoder<T> : IDisposable
+    internal interface IDecoder<T> : IDisposable
     {
         T Read();
     }

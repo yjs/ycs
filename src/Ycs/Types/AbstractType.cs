@@ -11,7 +11,7 @@ namespace Ycs
 {
     public class YEventArgs
     {
-        public YEventArgs(YEvent evt, Transaction transaction)
+        internal YEventArgs(YEvent evt, Transaction transaction)
         {
             Event = evt;
             Transaction = transaction;
@@ -23,7 +23,7 @@ namespace Ycs
 
     public class YDeepEventArgs
     {
-        public YDeepEventArgs(IList<YEvent> events, Transaction transaction)
+        internal YDeepEventArgs(IList<YEvent> events, Transaction transaction)
         {
             Events = events;
             Transaction = transaction;
@@ -35,28 +35,15 @@ namespace Ycs
 
     public class AbstractType
     {
-        private int _length;
-        public virtual int Length
-        {
-            get
-            {
-                return _length;
-            }
-
-            internal set
-            {
-                _length = value;
-            }
-        }
-
-        public Item _item = null;
-        public Item _start = null;
-        public IDictionary<string, Item> _map = new Dictionary<string, Item>();
+        internal Item _item = null;
+        internal Item _start = null;
+        internal IDictionary<string, Item> _map = new Dictionary<string, Item>();
 
         public event EventHandler<YEventArgs> EventHandler;
         public event EventHandler<YDeepEventArgs> DeepEventHandler;
 
         public YDoc Doc { get; protected set; }
+        public virtual int Length { get; internal set; }
 
         internal virtual void Integrate(YDoc doc, Item item)
         {
