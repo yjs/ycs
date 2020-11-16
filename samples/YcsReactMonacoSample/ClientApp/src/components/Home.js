@@ -8,7 +8,7 @@ import { SyncProtocol } from '../util/syncProtocol.js';
 
 export class Home extends Component {
   static displayName = Home.name;
-  static maxInt = 2147483647;
+  static maxClientId = 1000000000;
 
   _ydoc = null;
   _ytext = null;
