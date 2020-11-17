@@ -1,4 +1,4 @@
-C# reference implementation of the [Yjs](https://github.com/yjs/yjs). Supports YArray, YMap, YText. Compatible with the Yjs on the binary protocol level.
+C# implementation of the [Yjs](https://github.com/yjs/yjs). Supports YArray, YMap, YText. Compatible with the Yjs on the binary protocol level.
 
 Short demo
 -------
