@@ -30,7 +30,7 @@ export class Home extends Component {
 
   initConnection() {
     this._connection = new HubConnectionBuilder()
-      .withUrl('https://localhost:5001/hubs/ycs', { transport: HttpTransportType.WebSockets })
+      .withUrl('https://localhost:5001/hubs/ycs')
       .withAutomaticReconnect()
       .build();
 
