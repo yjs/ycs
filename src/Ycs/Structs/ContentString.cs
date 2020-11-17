@@ -64,7 +64,7 @@ namespace Ycs
 
             // Prevent encoding invalid documents because of splitting of surrogate pairs.
             var firstCharCode = (char)_content[offset - 1];
-            if (firstCharCode >= 0xD800 && firstCharCode <= 0xDFFF)
+            if (firstCharCode >= 0xD800 && firstCharCode <= 0xDBFF)
             {
                 // Last character of the left split is the start of a surrogate utf16/ucs2 pair.
                 // We don't support splitting of surrogate pairs because this may lead to invalid documents.
