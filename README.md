@@ -1,5 +1,8 @@
-C# port of the Yjs that is compatible.
-
 Short demo
 -------
-![img](https://github.com/yjs/ycs/blob/master/demo.gif)
+
+Client: Yjs, Monaco editor, SignalR
+
+Server: Ycs, AspNetCore, SignalR
+
+![img](https://github.com/yjs/ycs/blob/main/ycs.gif)
