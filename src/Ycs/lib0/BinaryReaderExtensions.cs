@@ -146,9 +146,19 @@ namespace Ycs
                 case 121: // boolean false
                     return false;
                 case 123: // Float64
-                    return BitConverter.Int64BitsToDouble(reader.ReadInt64());
+                    var dBytes = reader.ReadBytes(8);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(dBytes);
+                    }
+                    return BitConverter.ToDouble(dBytes);
                 case 124: // Float32
-                    return BitConverter.Int32BitsToSingle(reader.ReadInt32());
+                    var fBytes = reader.ReadBytes(4);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(fBytes);
+                    }
+                    return BitConverter.ToSingle(fBytes);
                 case 125: // integer
                     return reader.ReadVarInt().Value;
                 case 126: // null

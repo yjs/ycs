@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -141,14 +142,23 @@ namespace Ycs
                     writer.Write((byte)(b ? 120 : 121));
                     break;
                 case double d: // TYPE 123: FLOAT64
+                    var dBytes = BitConverter.GetBytes(d);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(dBytes);
+                    }
                     writer.Write((byte)123);
-                    writer.Write(BitConverter.DoubleToInt64Bits(d));
+                    writer.Write(dBytes);
                     break;
                 case float f: // TYPE 124: FLOAT32
-                    //writer.Write((byte)124);
-                    //writer.Write(BitConverter.SingleToInt32Bits(f));
-                    //break;
-                    throw new NotImplementedException("Needs unsafe or netstandard2.1");
+                    var fBytes = BitConverter.GetBytes(f);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(fBytes);
+                    }
+                    writer.Write((byte)124);
+                    writer.Write(fBytes);
+                    break;
                 case int i: // TYPE 125: INTEGER
                     writer.Write((byte)125);
                     writer.WriteVarInt(i);

@@ -80,6 +80,13 @@ namespace Ycs
         }
 
         [TestMethod]
+        public void TestEncodeFloatingPoint()
+        {
+            DoTestEncoding<float>("", (w, v) => w.WriteAny(v), (r) => (float)r.ReadAny(), 2.0f);
+            DoTestEncoding<double>("", (w, v) => w.WriteAny(v), (r) => (double)r.ReadAny(), 2.0);
+        }
+
+        [TestMethod]
         public void TestVarIntEncodingNegativeZero()
         {
             using var stream = new MemoryStream();
