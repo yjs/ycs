@@ -479,7 +479,7 @@ namespace Ycs
                 (user, rand) =>
                 {
                     var ytext = user.GetText("text");
-                    var insertPos = rand.Next(0, ytext.Length);
+                    var insertPos = rand.Next(0, ytext.Length + 1);
                     var text = new string(GetRandomChar(rand), 2);
 
                     var prevText = ytext.ToString();
@@ -537,7 +537,7 @@ namespace Ycs
                 (user, rand) =>
                 {
                     var ytext = user.GetText("text");
-                    var insertPos = rand.Next(0, ytext.Length);
+                    var insertPos = rand.Next(0, ytext.Length + 1);
                     var attrs = attributes[rand.Next(0, attributes.Length)];
                     var text = new string(GetRandomChar(rand), 2);
                     ytext.Insert(insertPos, text, attrs);
@@ -547,7 +547,7 @@ namespace Ycs
                 (user, rand) =>
                 {
                     var ytext = user.GetText("text");
-                    var insertPos = rand.Next(0, ytext.Length);
+                    var insertPos = rand.Next(0, ytext.Length + 1);
                     ytext.InsertEmbed(insertPos, new[] { "video", "https://www.youtube.com/watch?v=dQw4w9WgXcQ" });
                 },
 
@@ -556,7 +556,7 @@ namespace Ycs
                 {
                     var ytext = user.GetText("text");
                     var contentLen = ytext.Length;
-                    var insertPos = rand.Next(0, contentLen);
+                    var insertPos = rand.Next(0, contentLen + 1);
                     var overwrite = Math.Min(rand.Next(0, contentLen - insertPos), contentLen);
                     ytext.Delete(insertPos, overwrite);
                 },
@@ -566,7 +566,7 @@ namespace Ycs
                 {
                     var ytext = user.GetText("text");
                     var contentLen = ytext.Length;
-                    var insertPos = rand.Next(0, contentLen);
+                    var insertPos = rand.Next(0, contentLen + 1);
                     var overwrite = Math.Min(rand.Next(0, contentLen - insertPos), contentLen);
                     var format = attributes[rand.Next(/* skip 'null' at 0 */ 1, attributes.Length)];
                     ytext.Format(insertPos, overwrite, format);
@@ -576,7 +576,7 @@ namespace Ycs
                 (user, rand) =>
                 {
                     var ytext = user.GetText("text");
-                    var insertPos = rand.Next(0, ytext.Length);
+                    var insertPos = rand.Next(0, ytext.Length + 1);
                     var text = new string(GetRandomChar(rand), 2);
 
                     var ops = new List<Delta>();
