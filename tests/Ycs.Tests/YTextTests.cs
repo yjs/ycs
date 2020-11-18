@@ -504,7 +504,6 @@ namespace Ycs
 
         [DataTestMethod]
         [DataRow(5, 20)]
-        /*
         [DataRow(5, 40)]
         [DataRow(5, 42)]
         [DataRow(5, 43)]
@@ -515,9 +514,9 @@ namespace Ycs
         [DataRow(5, 400)]
         [DataRow(5, 500)]
         [DataRow(5, 600)]
+        /*
         [DataRow(5, 1_000)]
         [DataRow(5, 1_800)]
-        /*
         [DataRow(5, 3_000)]
         [DataRow(5, 5_000)]
         [DataRow(5, 15_000)]
