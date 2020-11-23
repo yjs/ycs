@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ycs", "src\Ycs\Ycs.csproj",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ycs.Tests", "tests\Ycs.Tests\Ycs.Tests.csproj", "{1D60757D-1CAC-4616-A6AC-52F47D285C29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YcsSample", "samples\YcsReactMonacoSample\YcsReactMonacoSample.csproj", "{83B32035-B539-4CFC-BA34-E2568BE0918D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YcsReactMonacoSample", "samples\YcsReactMonacoSample\YcsReactMonacoSample.csproj", "{83B32035-B539-4CFC-BA34-E2568BE0918D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ycs.Benchmarks", "tests\Ycs.Benchmarks\Ycs.Benchmarks.csproj", "{DDBA8F8C-A8D3-4C23-A36B-C2DD0BBAB10C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{83B32035-B539-4CFC-BA34-E2568BE0918D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83B32035-B539-4CFC-BA34-E2568BE0918D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83B32035-B539-4CFC-BA34-E2568BE0918D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDBA8F8C-A8D3-4C23-A36B-C2DD0BBAB10C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBA8F8C-A8D3-4C23-A36B-C2DD0BBAB10C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDBA8F8C-A8D3-4C23-A36B-C2DD0BBAB10C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBA8F8C-A8D3-4C23-A36B-C2DD0BBAB10C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

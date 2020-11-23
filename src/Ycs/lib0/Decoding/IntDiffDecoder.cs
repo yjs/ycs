@@ -8,7 +8,8 @@ using System.IO;
 
 namespace Ycs
 {
-    internal sealed class IntDiffDecoder : AbstractStreamDecoder<int>
+    /// <seealso cref="IntDiffEncoder"/>
+    internal class IntDiffDecoder : AbstractStreamDecoder<int>
     {
         private int _state;
 
@@ -18,9 +19,12 @@ namespace Ycs
             _state = start;
         }
 
+        /// <inheritdoc/>
         public override int Read()
         {
-            _state += Reader.ReadVarInt().Value;
+            CheckDisposed();
+
+            _state += Stream.ReadVarInt().Value;
             return _state;
         }
     }

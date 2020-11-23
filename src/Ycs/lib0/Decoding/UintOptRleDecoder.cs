@@ -8,7 +8,8 @@ using System.IO;
 
 namespace Ycs
 {
-    internal sealed class UintOptRleDecoder : AbstractStreamDecoder<uint>
+    /// <seealso cref="UintOptRleEncoder"/>
+    internal class UintOptRleDecoder : AbstractStreamDecoder<uint>
     {
         private uint _state;
         private uint _count;
@@ -21,20 +22,22 @@ namespace Ycs
 
         public override uint Read()
         {
+            CheckDisposed();
+
             if (_count == 0)
             {
-                var v = Reader.ReadVarInt();
+                var (value, sign) = Stream.ReadVarInt();
 
                 // If the sign is negative, we read the count too; otherwise, count is 1.
-                bool isNegative = v.Sign < 0;
+                bool isNegative = sign < 0;
                 if (isNegative)
                 {
-                    _state = (uint)(-v.Value);
-                    _count = Reader.ReadVarUint() + 2;
+                    _state = (uint)(-value);
+                    _count = Stream.ReadVarUint() + 2;
                 }
                 else
                 {
-                    _state = (uint)v.Value;
+                    _state = (uint)value;
                     _count = 1;
                 }
             }

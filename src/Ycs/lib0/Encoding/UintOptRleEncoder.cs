@@ -12,13 +12,22 @@ namespace Ycs
     /// If the input occurs multiple times, we write it as a negative number. The <see cref="UintOptRleDecoder"/>
     /// then understands that it needs to read a count.
     /// </summary>
-    internal sealed class UintOptRleEncoder : AbstractStreamEncoder<uint>
+    /// <seealso cref="UintOptRleDecoder"/>
+    internal class UintOptRleEncoder : AbstractStreamEncoder<uint>
     {
         private uint _state;
         private uint _count;
 
+        public UintOptRleEncoder()
+        {
+            // Do nothing.
+        }
+
+        /// <inheritdoc/>
         public override void Write(uint value)
         {
+            CheckDisposed();
+
             if (_state == value)
             {
                 _count++;
@@ -47,15 +56,15 @@ namespace Ycs
                 // Case 2: Write several values. Set sign to negative to indicate that there is a length coming.
                 if (_count == 1)
                 {
-                    Writer.WriteVarInt((int)_state);
+                    Stream.WriteVarInt((int)_state);
                 }
                 else
                 {
                     // Specify 'treatZeroAsNegative' in case we pass the '-0'.
-                    Writer.WriteVarInt(-(int)_state, treatZeroAsNegative: _state == 0);
+                    Stream.WriteVarInt(-(int)_state, treatZeroAsNegative: _state == 0);
 
                     // Since count is always >1, we can decrement by one. Non-standard encoding.
-                    Writer.WriteVarUint(_count - 2);
+                    Stream.WriteVarUint(_count - 2);
                 }
             }
         }

@@ -4,25 +4,26 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
-    internal sealed class StringDecoder : IDecoder<string>
+    /// <seealso cref="StringEncoder"/>
+    internal class StringDecoder : IDecoder<string>
     {
-        private UintOptRleDecoder _decoder;
+        private UintOptRleDecoder _lengthDecoder;
         private string _value;
         private int _pos;
         private bool _disposed;
 
         public StringDecoder(Stream input, bool leaveOpen = false)
         {
-            using var reader = new BinaryReader(input, Encoding.UTF8, leaveOpen: true);
-            _value = reader.ReadVarString();
+            Debug.Assert(input != null);
 
-            // Allow the rest data to be read.
-            _decoder = new UintOptRleDecoder(input, leaveOpen);
+            _value = input.ReadVarString();
+            _lengthDecoder = new UintOptRleDecoder(input, leaveOpen);
         }
 
         public void Dispose()
@@ -31,9 +32,12 @@ namespace Ycs
             System.GC.SuppressFinalize(this);
         }
 
+        /// <inheritdoc/>
         public string Read()
         {
-            int length = (int)_decoder.Read();
+            CheckDisposed();
+
+            int length = (int)_lengthDecoder.Read();
             if (length == 0)
             {
                 return string.Empty;
@@ -52,17 +56,26 @@ namespace Ycs
             return result;
         }
 
-        private void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
                 if (disposing)
                 {
-                    _decoder.Dispose();
+                    _lengthDecoder?.Dispose();
                 }
 
-                _decoder = null;
+                _lengthDecoder = null;
                 _disposed = true;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        protected void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
             }
         }
     }

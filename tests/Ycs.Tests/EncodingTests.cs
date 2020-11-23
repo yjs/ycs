@@ -6,7 +6,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Ycs
@@ -42,11 +41,7 @@ namespace Ycs
         public void TestGolangBinaryEncodingCompatibility(uint value, byte[] expected)
         {
             using var stream = new MemoryStream();
-
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-            {
-                writer.WriteVarUint(value);
-            }
+            stream.WriteVarUint(value);
 
             var actual = stream.ToArray();
             CollectionAssert.AreEqual(expected, actual);
@@ -90,10 +85,7 @@ namespace Ycs
         public void TestVarIntEncodingNegativeZero()
         {
             using var stream = new MemoryStream();
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-            {
-                writer.WriteVarInt(0, treatZeroAsNegative: true);
-            }
+            stream.WriteVarInt(0, treatZeroAsNegative: true);
 
             var actual = stream.ToArray();
 
@@ -101,9 +93,8 @@ namespace Ycs
             CollectionAssert.AreEqual(new byte[] { 64 }, actual);
 
             using (var inputStream = new MemoryStream(actual))
-            using (var reader = new BinaryReader(inputStream, Encoding.UTF8, leaveOpen: true))
             {
-                var v = reader.ReadVarInt();
+                var v = inputStream.ReadVarInt();
                 Assert.AreEqual(0, v.Value);
                 Assert.AreEqual(-1, v.Sign);
             }
@@ -141,24 +132,19 @@ namespace Ycs
             DoTestEncoding<string>(string.Empty, (w, v) => w.WriteVarString(v), (r) => r.ReadVarString(), "😝"); // Surrogate length 4.
         }
 
-        private void DoTestEncoding<T>(string description, Action<BinaryWriter, T> write, Func<BinaryReader, T> read, T val)
+        private void DoTestEncoding<T>(string description, Action<Stream, T> write, Func<Stream, T> read, T val)
         {
             byte[] encoded;
 
             using (var outputStream = new MemoryStream())
             {
-                using (var writer = new BinaryWriter(outputStream, Encoding.UTF8, leaveOpen: true))
-                {
-                    write(writer, val);
-                }
-
+                write(outputStream, val);
                 encoded = outputStream.ToArray();
             }
 
             using (var inputStream = new MemoryStream(encoded))
-            using (var reader = new BinaryReader(inputStream, Encoding.UTF8, leaveOpen: true))
             {
-                var decodedValue = read(reader);
+                var decodedValue = read(inputStream);
                 Assert.AreEqual(val, decodedValue, description);
             }
         }

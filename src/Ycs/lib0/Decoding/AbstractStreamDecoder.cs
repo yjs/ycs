@@ -4,25 +4,29 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
+using System;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
+    /// <seealso cref="AbstractStreamEncoder{T}"/>
     internal abstract class AbstractStreamDecoder<T> : IDecoder<T>
     {
-        private Stream _stream;
-        private bool _disposed;
+        private readonly bool _leaveOpen;
 
         protected AbstractStreamDecoder(Stream input, bool leaveOpen = false)
         {
-            _stream = input;
-            Reader = new BinaryReader(_stream, Encoding.UTF8, leaveOpen: leaveOpen);
+            Debug.Assert(input != null);
+
+            Stream = input;
+            _leaveOpen = leaveOpen;
         }
 
-        protected BinaryReader Reader { get; private set; }
+        protected Stream Stream { get; private set; }
+        protected bool Disposed { get; private set; }
 
-        protected bool HasContent => _stream.Position < _stream.Length;
+        protected bool HasContent => Stream.Position < Stream.Length;
 
         /// <inheritdoc/>
         public abstract T Read();
@@ -35,17 +39,24 @@ namespace Ycs
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!Disposed)
             {
-                if (disposing)
+                if (disposing && !_leaveOpen)
                 {
-                    Reader.Dispose();
-                    _stream.Dispose();
+                    Stream?.Dispose();
                 }
 
-                Reader = null;
-                _stream = null;
-                _disposed = true;
+                Stream = null;
+                Disposed = true;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        protected void CheckDisposed()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
             }
         }
     }

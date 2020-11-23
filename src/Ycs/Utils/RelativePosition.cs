@@ -6,7 +6,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
@@ -96,25 +95,25 @@ namespace Ycs
             return new RelativePosition(type, null);
         }
 
-        public void Write(BinaryWriter encoder)
+        public void Write(Stream writer)
         {
             if (Item != null)
             {
                 // Case 1: Found position somewhere in the linked list.
-                encoder.WriteVarUint(0);
-                Item.Value.Write(encoder);
+                writer.WriteVarUint(0);
+                Item.Value.Write(writer);
             }
             else if (TName != null)
             {
                 // Case 2: Found position at the end of the list and type is stored in y.share.
-                encoder.WriteVarUint(1);
-                encoder.WriteVarString(TName);
+                writer.WriteVarUint(1);
+                writer.WriteVarString(TName);
             }
             else if (TypeId != null)
             {
                 // Case 3: Found position at the end of the list and type is attached to an item.
-                encoder.WriteVarUint(2);
-                TypeId.Value.Write(encoder);
+                writer.WriteVarUint(2);
+                TypeId.Value.Write(writer);
             }
             else
             {
@@ -122,7 +121,7 @@ namespace Ycs
             }
         }
 
-        public static RelativePosition Read(BinaryReader reader)
+        public static RelativePosition Read(Stream reader)
         {
             switch (reader.ReadVarUint())
             {
@@ -146,20 +145,8 @@ namespace Ycs
         public byte[] ToArray()
         {
             using var stream = new MemoryStream();
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
-            {
-                Write(writer);
-            }
-
+            Write(stream);
             return stream.ToArray();
-        }
-
-        public static RelativePosition FromStream(Stream input, bool leaveOpen = true)
-        {
-            using (var reader = new BinaryReader(input, Encoding.UTF8, leaveOpen))
-            {
-                return Read(reader);
-            }
         }
     }
 }

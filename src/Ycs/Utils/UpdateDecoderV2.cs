@@ -4,23 +4,25 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
     internal class DSDecoderV2 : IDSDecoder
     {
+        private readonly bool _leaveOpen;
         private int _dsCurVal;
 
         public DSDecoderV2(Stream input, bool leaveOpen = false)
         {
-            Reader = new BinaryReader(input, Encoding.UTF8, leaveOpen: leaveOpen);
+            _leaveOpen = leaveOpen;
+            Reader = input;
         }
 
-        public BinaryReader Reader { get; private set; }
+        public Stream Reader { get; private set; }
         protected bool Disposed { get; private set; }
 
         public void Dispose()
@@ -53,13 +55,22 @@ namespace Ycs
         {
             if (!Disposed)
             {
-                if (disposing)
+                if (disposing && !_leaveOpen)
                 {
-                    Reader.Dispose();
+                    Reader?.Dispose();
                 }
 
                 Reader = null;
                 Disposed = true;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        protected void CheckDisposed()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
             }
         }
     }
@@ -102,11 +113,13 @@ namespace Ycs
 
         public ID ReadLeftId()
         {
+            CheckDisposed();
             return new ID((int)_clientDecoder.Read(), _leftClockDecoder.Read());
         }
 
         public ID ReadRightId()
         {
+            CheckDisposed();
             return new ID((int)_clientDecoder.Read(), _rightClockDecoder.Read());
         }
 
@@ -115,31 +128,38 @@ namespace Ycs
         /// </summary>
         public int ReadClient()
         {
+            CheckDisposed();
             return (int)_clientDecoder.Read();
         }
 
         public byte ReadInfo()
         {
+            CheckDisposed();
             return _infoDecoder.Read();
         }
 
         public string ReadString()
         {
+            CheckDisposed();
             return _stringDecoder.Read();
         }
 
         public bool ReadParentInfo()
         {
+            CheckDisposed();
             return _parentInfoDecoder.Read() == 1;
         }
 
         public uint ReadTypeRef()
         {
+            CheckDisposed();
             return _typeRefDecoder.Read();
         }
 
         public int ReadLength()
         {
+            CheckDisposed();
+
             var value = (int)_lengthDecoder.Read();
             Debug.Assert(value >= 0);
             return value;
@@ -147,17 +167,21 @@ namespace Ycs
 
         public object ReadAny()
         {
+            CheckDisposed();
             var obj = Reader.ReadAny();
             return obj;
         }
 
         public byte[] ReadBuffer()
         {
+            CheckDisposed();
             return Reader.ReadVarUint8Array();
         }
 
         public string ReadKey()
         {
+            CheckDisposed();
+
             var keyClock = _keyClockDecoder.Read();
             if (keyClock < _keys.Count)
             {
@@ -173,6 +197,8 @@ namespace Ycs
 
         public object ReadJson()
         {
+            CheckDisposed();
+
             var jsonString = Reader.ReadVarString();
             var result = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonString);
             return result;
@@ -184,15 +210,15 @@ namespace Ycs
             {
                 if (disposing)
                 {
-                    _keyClockDecoder.Dispose();
-                    _clientDecoder.Dispose();
-                    _leftClockDecoder.Dispose();
-                    _rightClockDecoder.Dispose();
-                    _infoDecoder.Dispose();
-                    _stringDecoder.Dispose();
-                    _parentInfoDecoder.Dispose();
-                    _typeRefDecoder.Dispose();
-                    _lengthDecoder.Dispose();
+                    _keyClockDecoder?.Dispose();
+                    _clientDecoder?.Dispose();
+                    _leftClockDecoder?.Dispose();
+                    _rightClockDecoder?.Dispose();
+                    _infoDecoder?.Dispose();
+                    _stringDecoder?.Dispose();
+                    _parentInfoDecoder?.Dispose();
+                    _typeRefDecoder?.Dispose();
+                    _lengthDecoder?.Dispose();
                 }
 
                 _keyClockDecoder = null;

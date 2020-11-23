@@ -14,6 +14,7 @@ namespace Ycs
     /// <br/>
     /// Encodes values <c>[1, 1, 1, 2, 3, 4, 5, 6]</c> as <c>[1, 1, 0, 2, 1, 5]</c>.
     /// </summary>
+    /// <seealso cref="RleIntDiffDecoder"/>
     internal sealed class RleIntDiffEncoder : AbstractStreamEncoder<int>
     {
         private int _state;
@@ -24,8 +25,11 @@ namespace Ycs
             _state = start;
         }
 
+        /// <inheritdoc/>
         public override void Write(int value)
         {
+            CheckDisposed();
+
             if (_state == value && _count > 0)
             {
                 _count++;
@@ -34,10 +38,10 @@ namespace Ycs
             {
                 if (_count > 0)
                 {
-                    Writer.WriteVarUint(_count - 1);
+                    Stream.WriteVarUint(_count - 1);
                 }
 
-                Writer.WriteVarInt(value - _state);
+                Stream.WriteVarInt(value - _state);
 
                 _count = 1;
                 _state = value;

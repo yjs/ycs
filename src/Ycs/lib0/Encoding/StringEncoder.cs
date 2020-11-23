@@ -5,6 +5,7 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -15,18 +16,27 @@ namespace Ycs
     /// <br/>
     /// The lengths are encoded using the <see cref="UintOptRleEncoder"/>.
     /// </summary>
-    internal sealed class StringEncoder : IEncoder<string>, IDisposable
+    /// <seealso cref="StringDecoder"/>
+    internal class StringEncoder : IEncoder<string>
     {
-        private StringBuilder _sb = new StringBuilder();
-        private UintOptRleEncoder _lengthEncoder = new UintOptRleEncoder();
+        private StringBuilder _sb;
+        private UintOptRleEncoder _lengthEncoder;
         private bool _disposed;
 
+        public StringEncoder()
+        {
+            _sb = new StringBuilder();
+            _lengthEncoder = new UintOptRleEncoder();
+        }
+
+        /// <inheritdoc/>
         public void Dispose()
         {
             Dispose(disposing: true);
             System.GC.SuppressFinalize(this);
         }
 
+        /// <inheritdoc/>
         public void Write(string value)
         {
             _sb.Append(value);
@@ -42,16 +52,20 @@ namespace Ycs
         public byte[] ToArray()
         {
             using var stream = new MemoryStream();
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-            {
-                writer.WriteVarString(_sb.ToString());
-                writer.Write(_lengthEncoder.ToArray());
-            }
+            stream.WriteVarString(_sb.ToString());
+
+            var (buffer, length) = _lengthEncoder.GetBuffer();
+            stream.Write(buffer, 0, length);
 
             return stream.ToArray();
         }
 
-        private void Dispose(bool disposing)
+        public (byte[] buffer, int length) GetBuffer()
+        {
+            throw new NotSupportedException($"{nameof(StringEncoder)} doesn't use temporary byte buffers");
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
@@ -63,8 +77,16 @@ namespace Ycs
 
                 _sb = null;
                 _lengthEncoder = null;
-
                 _disposed = true;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        protected void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
             }
         }
     }

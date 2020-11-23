@@ -133,6 +133,11 @@ namespace Ycs
             }
         }
 
+        protected void CompareUsers(TestYInstance left, TestYInstance right)
+        {
+
+        }
+
         protected void CompareObjects(object o1, object o2)
         {
             if (ReferenceEquals(o1, o2))

@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -40,17 +39,16 @@ namespace Ycs
             // Debug.WriteLine($"MSG {sender.ClientId} -> {receiver.ClientId}, len {m.Length}:");
             // Debug.WriteLine(string.Join(",", m));
 
-            using var stream = new MemoryStream();
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
+            using var writer = new MemoryStream();
+            using (var reader = new MemoryStream(m))
             {
-                using var reader = new BinaryReader(new MemoryStream(m), Encoding.UTF8, false);
                 SyncProtocol.ReadSyncMessage(reader, writer, receiver, receiver._tc);
             }
 
-            if (stream.Length > 0)
+            if (writer.Length > 0)
             {
                 // Send reply message.
-                var replyMessage = stream.ToArray();
+                var replyMessage = writer.ToArray();
                 // Debug.WriteLine($"REPLY {receiver.ClientId} -> {sender.ClientId}, len {replyMessage.Length}:");
                 // Debug.WriteLine(string.Join(",", replyMessage));
                 sender.Receive(replyMessage, receiver);

@@ -16,14 +16,22 @@ namespace Ycs
     /// <br/>
     /// I.e. <c>[7, 8, 9, 10]</c> will be encoded as <c>[-7, 4]</c>, and <c>[1, 3, 5]</c> will be encoded as <c>[1, 3, 5]</c>.
     /// </summary>
-    internal sealed class IncUintOptRleEncoder : AbstractStreamEncoder<uint>
+    /// <seealso cref="IncUintOptRleDecoder"/>
+    internal class IncUintOptRleEncoder : AbstractStreamEncoder<uint>
     {
         private uint _state;
         private uint _count;
 
+        public IncUintOptRleEncoder()
+        {
+            // Do nothing.
+        }
+
+        /// <inheritdoc/>
         public override void Write(uint value)
         {
             Debug.Assert(value <= int.MaxValue);
+            CheckDisposed();
 
             if (_state + _count == value)
             {
@@ -53,15 +61,15 @@ namespace Ycs
                 // Case 2: Write several values. Set sign to negative to indicate that there is a length coming.
                 if (_count == 1)
                 {
-                    Writer.WriteVarInt((int)_state);
+                    Stream.WriteVarInt((int)_state);
                 }
                 else
                 {
                     // Specify 'treatZeroAsNegative' in case we pass the '-0' value.
-                    Writer.WriteVarInt(-(int)_state, treatZeroAsNegative: _state == 0);
+                    Stream.WriteVarInt(-(int)_state, treatZeroAsNegative: _state == 0);
 
                     // Since count is always >1, we can decrement by one. Non-standard encoding.
-                    Writer.WriteVarUint(_count - 2);
+                    Stream.WriteVarUint(_count - 2);
                 }
             }
         }

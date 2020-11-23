@@ -84,6 +84,8 @@ namespace Ycs
         // If this document is a subdocument - a document integrated into another document - them _item is defined.
         internal Item _item;
 
+        private readonly IDictionary<string, AbstractType> _share;
+
         internal static int GenerateNewClientId()
         {
             return new Random().Next(0, int.MaxValue);
@@ -97,7 +99,7 @@ namespace Ycs
             _transactionCleanups = new List<Transaction>();
 
             ClientId = GenerateNewClientId();
-            Share = new Dictionary<string, AbstractType>();
+            _share = new Dictionary<string, AbstractType>();
             Store = new StructStore();
             Subdocs = new HashSet<YDoc>();
             ShouldLoad = _opts.AutoLoad;
@@ -185,8 +187,6 @@ namespace Ycs
         public event EventHandler<(ISet<YDoc> Loaded, ISet<YDoc> Added, ISet<YDoc> Removed)> SubdocsChanged;
 
         public int ClientId { get; internal set; }
-        // TODO: [alekseyk] Needed?
-        public IDictionary<string, AbstractType> Share { get; private set; }
         internal StructStore Store { get; private set; }
 
         /// <summary>
@@ -249,11 +249,11 @@ namespace Ycs
         public T Get<T>(string name)
             where T : AbstractType, new()
         {
-            if (!Share.TryGetValue(name, out var type))
+            if (!_share.TryGetValue(name, out var type))
             {
                 type = new T();
                 type.Integrate(this, null);
-                Share[name] = type;
+                _share[name] = type;
             }
 
             // Remote type is realized when this method is called.
@@ -281,7 +281,7 @@ namespace Ycs
 
                     t.Length = type.Length;
 
-                    Share[name] = t;
+                    _share[name] = t;
                     t.Integrate(this, null);
                     return t;
                 }
@@ -412,6 +412,19 @@ namespace Ycs
             var newOpts = _opts.Clone();
             newOpts.Guid = System.Guid.NewGuid().ToString("D");
             return newOpts;
+        }
+
+        internal string FindRootTypeKey(AbstractType type)
+        {
+            foreach (var kvp in _share)
+            {
+                if (type?.Equals(kvp.Value) ?? false)
+                {
+                    return kvp.Key;
+                }
+            }
+
+            throw new Exception();
         }
     }
 }

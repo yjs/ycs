@@ -8,7 +8,8 @@ using System.IO;
 
 namespace Ycs
 {
-    internal sealed class IntDiffOptRleDecoder : AbstractStreamDecoder<int>
+    /// <seealso cref="IntDiffOptRleEncoder"/>
+    internal class IntDiffOptRleDecoder : AbstractStreamDecoder<int>
     {
         private int _state;
         private uint _count;
@@ -20,11 +21,14 @@ namespace Ycs
             // Do nothing.
         }
 
+        /// <inheritdoc/>
         public override int Read()
         {
+            CheckDisposed();
+
             if (_count == 0)
             {
-                int diff = Reader.ReadVarInt().Value;
+                int diff = Stream.ReadVarInt().Value;
 
                 // If the first bit is set, we read more data.
                 bool hasCount = (diff & Bit.Bit1) > 0;
@@ -38,12 +42,11 @@ namespace Ycs
                     _diff = diff >> 1;
                 }
 
-                _count = hasCount ? Reader.ReadVarUint() + 2 : 1;
+                _count = hasCount ? Stream.ReadVarUint() + 2 : 1;
             }
 
             _state += _diff;
             _count--;
-
             return _state;
         }
     }

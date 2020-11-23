@@ -5,23 +5,21 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
-    internal abstract class AbstractStreamEncoder<T> : IEncoder<T>, IDisposable
+    /// <seealso cref="AbstractStreamDecoder{T}"/>
+    internal abstract class AbstractStreamEncoder<T> : IEncoder<T>
     {
-        private MemoryStream _stream;
-        private bool _disposed;
-
-        public AbstractStreamEncoder()
+        protected AbstractStreamEncoder()
         {
-            _stream = new MemoryStream();
-            Writer = new BinaryWriter(_stream, Encoding.UTF8, leaveOpen: false);
+            Stream = new MemoryStream();
         }
 
-        protected BinaryWriter Writer { get; private set; }
+        protected MemoryStream Stream { get; private set; }
+        protected bool Disposed { get; private set; }
 
         /// <inheritdoc/>
         public void Dispose()
@@ -37,28 +35,41 @@ namespace Ycs
         public virtual byte[] ToArray()
         {
             Flush();
-            return _stream.ToArray();
+            return Stream.ToArray();
+        }
+
+        /// <inheritdoc/>
+        public virtual (byte[] buffer, int length) GetBuffer()
+        {
+            Flush();
+            return (Stream.GetBuffer(), (int)Stream.Length);
         }
 
         protected virtual void Flush()
         {
-            Writer.Flush();
+            CheckDisposed();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!Disposed)
             {
                 if (disposing)
                 {
-                    Writer.Dispose();
-                    _stream.Dispose();
+                    Stream?.Dispose();
                 }
 
-                Writer = null;
-                _stream = null;
+                Stream = null;
+                Disposed = true;
+            }
+        }
 
-                _disposed = true;
+        [Conditional("DEBUG")]
+        protected void CheckDisposed()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(GetType().ToString());
             }
         }
     }

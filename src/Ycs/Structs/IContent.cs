@@ -18,7 +18,6 @@ namespace Ycs
         bool MergeWith(IContent right);
     }
 
-    // TODO: [alekseyk] Refactor not to extend the interface.
     internal interface IContentEx : IContent
     {
         int Ref { get; }

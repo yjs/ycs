@@ -10,7 +10,7 @@ using System.IO;
 namespace Ycs
 {
     /// <seealso cref="RleEncoder"/>
-    internal sealed class RleDecoder : AbstractStreamDecoder<byte>
+    internal class RleDecoder : AbstractStreamDecoder<byte>
     {
         private byte _state;
         private int _count;
@@ -21,16 +21,19 @@ namespace Ycs
             // Do nothing.
         }
 
+        /// <inheritdoc/>
         public override byte Read()
         {
+            CheckDisposed();
+
             if (_count == 0)
             {
-                _state = Reader.ReadByte();
+                _state = Stream._ReadByte();
 
                 if (HasContent)
                 {
                     // See encoder implementation for the reason why this is incremented.
-                    _count = (int)Reader.ReadVarUint() + 1;
+                    _count = (int)Stream.ReadVarUint() + 1;
                     Debug.Assert(_count > 0);
                 }
                 else

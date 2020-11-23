@@ -11,7 +11,7 @@ namespace Ycs
 {
     internal interface IDSDecoder : IDisposable
     {
-        BinaryReader Reader { get; }
+        Stream Reader { get; }
 
         void ResetDsCurVal();
         int ReadDsClock();

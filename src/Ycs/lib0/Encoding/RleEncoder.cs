@@ -14,13 +14,22 @@ namespace Ycs
     /// <br/>
     /// It was originally used for image compression.
     /// </summary>
-    internal sealed class RleEncoder : AbstractStreamEncoder<byte>
+    /// <seealso cref="RleDecoder"/>
+    internal class RleEncoder : AbstractStreamEncoder<byte>
     {
         private byte? _state = null;
         private uint _count = 0;
 
+        public RleEncoder()
+        {
+            // Do nothing.
+        }
+
+        /// <inheritdoc/>
         public override void Write(byte value)
         {
+            CheckDisposed();
+
             if (_state == value)
             {
                 _count++;
@@ -31,10 +40,10 @@ namespace Ycs
                 {
                     // Flush counter, unless this is the first value (count = 0).
                     // Since 'count' is always >0, we can decrement by one. Non-standard encoding.
-                    Writer.WriteVarUint(_count - 1);
+                    Stream.WriteVarUint(_count - 1);
                 }
 
-                Writer.Write(value);
+                Stream.WriteByte(value);
 
                 _count = 1;
                 _state = value;

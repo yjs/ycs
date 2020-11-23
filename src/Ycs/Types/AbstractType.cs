@@ -92,19 +92,6 @@ namespace Ycs
             // Do nothing.
         }
 
-        internal string FindRootTypeKey()
-        {
-            foreach (var kvp in Doc.Share)
-            {
-                if (Equals(kvp.Value))
-                {
-                    return kvp.Key;
-                }
-            }
-
-            throw new Exception();
-        }
-
         internal Item _First()
         {
             var n = _start;
@@ -123,6 +110,11 @@ namespace Ycs
         internal void CallDeepEventHandlerListeners(IList<YEvent> events, Transaction transaction)
         {
             DeepEventHandler?.Invoke(this, new YDeepEventArgs(events, transaction));
+        }
+
+        internal string FindRootTypeKey()
+        {
+            return Doc.FindRootTypeKey(this);
         }
     }
 }

@@ -15,44 +15,44 @@ namespace Ycs
         public const int MessageYjsSyncStep2 = 1;
         public const int MessageYjsUpdate = 2;
 
-        public static void WriteSyncStep1(BinaryWriter writer, YDoc doc)
+        public static void WriteSyncStep1(Stream stream, YDoc doc)
         {
-            writer.WriteVarUint(MessageYjsSyncStep1);
+            stream.WriteVarUint(MessageYjsSyncStep1);
             var sv = doc.EncodeStateVectorV2();
-            writer.WriteVarUint8Array(sv);
+            stream.WriteVarUint8Array(sv);
         }
 
-        public static void WriteSyncStep2(BinaryWriter writer, YDoc doc, byte[] encodedStateVector)
+        public static void WriteSyncStep2(Stream stream, YDoc doc, byte[] encodedStateVector)
         {
-            writer.WriteVarUint(MessageYjsSyncStep2);
+            stream.WriteVarUint(MessageYjsSyncStep2);
             var update = doc.EncodeStateAsUpdateV2(encodedStateVector);
-            writer.WriteVarUint8Array(update);
+            stream.WriteVarUint8Array(update);
         }
 
-        public static void ReadSyncStep1(BinaryReader reader, BinaryWriter writer, YDoc doc)
+        public static void ReadSyncStep1(Stream reader, Stream writer, YDoc doc)
         {
             var encodedStateVector = reader.ReadVarUint8Array();
             WriteSyncStep2(writer, doc, encodedStateVector);
         }
 
-        public static void ReadSyncStep2(BinaryReader reader, YDoc doc, object transactionOrigin)
+        public static void ReadSyncStep2(Stream stream, YDoc doc, object transactionOrigin)
         {
-            var update = reader.ReadVarUint8Array();
+            var update = stream.ReadVarUint8Array();
             doc.ApplyUpdateV2(update, transactionOrigin);
         }
 
-        public static void WriteUpdate(BinaryWriter writer, byte[] update)
+        public static void WriteUpdate(Stream stream, byte[] update)
         {
-            writer.WriteVarUint(MessageYjsUpdate);
-            writer.WriteVarUint8Array(update);
+            stream.WriteVarUint(MessageYjsUpdate);
+            stream.WriteVarUint8Array(update);
         }
 
-        public static void ReadUpdate(BinaryReader reader, YDoc doc, object transactionOrigin)
+        public static void ReadUpdate(Stream stream, YDoc doc, object transactionOrigin)
         {
-            ReadSyncStep2(reader, doc, transactionOrigin);
+            ReadSyncStep2(stream, doc, transactionOrigin);
         }
 
-        public static int ReadSyncMessage(BinaryReader reader, BinaryWriter writer, YDoc doc, object transactionOrigin)
+        public static int ReadSyncMessage(Stream reader, Stream writer, YDoc doc, object transactionOrigin)
         {
             var messageType = (int)reader.ReadVarUint();
 

@@ -41,18 +41,17 @@ namespace Ycs
             return (a == null && b == null) || (a != null && b != null && a.Value.Equals(b.Value));
         }
 
-        public void Write(BinaryWriter writer)
+        public void Write(Stream writer)
         {
             writer.WriteVarUint((uint)Client);
             writer.WriteVarUint((uint)Clock);
         }
 
-        public static ID Read(BinaryReader reader)
+        public static ID Read(Stream reader)
         {
             var client = (int)reader.ReadVarUint();
             var clock = (int)reader.ReadVarUint();
             Debug.Assert(client >= 0 && clock >= 0);
-
             return new ID(client, clock);
         }
     }

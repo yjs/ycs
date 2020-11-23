@@ -8,24 +8,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
     internal class DSEncoderV2 : IDSEncoder
     {
         private int _dsCurVal;
-        private MemoryStream _restStream;
 
         public DSEncoderV2()
         {
             _dsCurVal = 0;
-
-            _restStream = new MemoryStream();
-            RestWriter = new BinaryWriter(_restStream, Encoding.UTF8, leaveOpen: true);
+            RestWriter = new MemoryStream();
         }
 
-        public BinaryWriter RestWriter { get; private set; }
+        public Stream RestWriter { get; private set; }
         protected bool Disposed { get; private set; }
 
         public void Dispose()
@@ -60,8 +56,7 @@ namespace Ycs
 
         public virtual byte[] ToArray()
         {
-            RestWriter.Flush();
-            return _restStream.ToArray();
+            return ((MemoryStream)RestWriter).ToArray();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -71,12 +66,9 @@ namespace Ycs
                 if (disposing)
                 {
                     RestWriter.Dispose();
-                    _restStream.Dispose();
                 }
 
                 RestWriter = null;
-                _restStream = null;
-
                 Disposed = true;
             }
         }
@@ -117,28 +109,23 @@ namespace Ycs
         public override byte[] ToArray()
         {
             using var stream = new MemoryStream();
+            // Read the feature flag that might be used in the future.
+            stream.WriteByte(0);
 
-            using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
-            {
-                // Read the feature flag that might be used in the future.
-                writer.Write((byte)0);
+            // TODO: [alekseyk] Maybe pass the writer directly instead of using ToArray()?
+            stream.WriteVarUint8Array(_keyClockEncoder.ToArray());
+            stream.WriteVarUint8Array(_clientEncoder.ToArray());
+            stream.WriteVarUint8Array(_leftClockEncoder.ToArray());
+            stream.WriteVarUint8Array(_rightClockEncoder.ToArray());
+            stream.WriteVarUint8Array(_infoEncoder.ToArray());
+            stream.WriteVarUint8Array(_stringEncoder.ToArray());
+            stream.WriteVarUint8Array(_parentInfoEncoder.ToArray());
+            stream.WriteVarUint8Array(_typeRefEncoder.ToArray());
+            stream.WriteVarUint8Array(_lengthEncoder.ToArray());
 
-                // TODO: [alekseyk] Maybe pass the writer directly instead of using ToArray()?
-                writer.WriteVarUint8Array(_keyClockEncoder.ToArray());
-                writer.WriteVarUint8Array(_clientEncoder.ToArray());
-                writer.WriteVarUint8Array(_leftClockEncoder.ToArray());
-                writer.WriteVarUint8Array(_rightClockEncoder.ToArray());
-                writer.WriteVarUint8Array(_infoEncoder.ToArray());
-                writer.WriteVarUint8Array(_stringEncoder.ToArray());
-                writer.WriteVarUint8Array(_parentInfoEncoder.ToArray());
-                writer.WriteVarUint8Array(_typeRefEncoder.ToArray());
-                writer.WriteVarUint8Array(_lengthEncoder.ToArray());
-
-                // Append the rest of the data from the RestWriter.
-                // Note it's not the 'WriteVarUint8Array'.
-                writer.Write(base.ToArray());
-            }
-
+            // Append the rest of the data from the RestWriter.
+            // Note it's not the 'WriteVarUint8Array'.
+            stream.Write(base.ToArray());
             return stream.ToArray();
         }
 

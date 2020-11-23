@@ -26,15 +26,23 @@ namespace Ycs
     /// <br/>
     /// Use this encoder only when appropriate. In most cases, this is probably a bad idea.
     /// </summary>
-    internal sealed class IntDiffOptRleEncoder : AbstractStreamEncoder<int>
+    /// <seealso cref="IntDiffOptRleDecoder"/>
+    internal class IntDiffOptRleEncoder : AbstractStreamEncoder<int>
     {
         private int _state = 0;
         private int _diff = 0;
         private uint _count = 0;
 
+        public IntDiffOptRleEncoder()
+        {
+            // Do nothing.
+        }
+
+        /// <inheritdoc/>
         public override void Write(int value)
         {
             Debug.Assert(value <= Bits.Bits30);
+            CheckDisposed();
 
             if (_diff == value - _state)
             {
@@ -72,12 +80,12 @@ namespace Ycs
                     encodedDiff = (_diff << 1) | (_count == 1 ? 0 : 1);
                 }
 
-                Writer.WriteVarInt(encodedDiff);
+                Stream.WriteVarInt(encodedDiff);
 
                 if (_count > 1)
                 {
                     // Since count is always >1, we can decrement by one. Non-standard encoding.
-                    Writer.WriteVarUint(_count - 2);
+                    Stream.WriteVarUint(_count - 2);
                 }
             }
         }

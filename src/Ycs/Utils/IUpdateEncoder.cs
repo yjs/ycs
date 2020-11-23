@@ -11,7 +11,7 @@ namespace Ycs
 {
     internal interface IDSEncoder : IDisposable
     {
-        BinaryWriter RestWriter { get; }
+        Stream RestWriter { get; }
 
         byte[] ToArray();
 

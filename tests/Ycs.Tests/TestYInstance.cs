@@ -29,11 +29,7 @@ namespace Ycs
                 if (e.origin != _tc)
                 {
                     using var stream = new MemoryStream();
-
-                    using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
-                    {
-                        SyncProtocol.WriteUpdate(writer, e.data);
-                    }
+                    SyncProtocol.WriteUpdate(stream, e.data);
 
                     BroadcastMessage(this, stream.ToArray());
                 }
@@ -63,11 +59,7 @@ namespace Ycs
                 _tc._onlineConns.Add(this);
 
                 using var stream = new MemoryStream();
-
-                using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
-                {
-                    SyncProtocol.WriteSyncStep1(writer, this);
-                }
+                SyncProtocol.WriteSyncStep1(stream, this);
 
                 // Publish SyncStep1
                 BroadcastMessage(this, stream.ToArray());
@@ -77,11 +69,7 @@ namespace Ycs
                     if (remoteYInstance != this)
                     {
                         stream.SetLength(0);
-
-                        using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
-                        {
-                            SyncProtocol.WriteSyncStep1(writer, remoteYInstance);
-                        }
+                        SyncProtocol.WriteSyncStep1(stream, remoteYInstance);
 
                         Receive(stream.ToArray(), remoteYInstance);
                     }

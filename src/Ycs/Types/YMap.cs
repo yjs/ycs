@@ -186,7 +186,6 @@ namespace Ycs
             return false;
         }
 
-        // TODO: [alekseyk] Needed for xml?
         private object TypeMapGetSnapshot(string key, Snapshot snapshot)
         {
             if (!_map.TryGetValue(key, out var v))
