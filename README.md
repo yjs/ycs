@@ -7,4 +7,4 @@ Client: [Yjs](https://github.com/yjs/yjs), [Monaco editor](https://github.com/mi
 
 Server: Ycs, [AspNetCore](https://github.com/dotnet/aspnetcore), [SignalR](https://github.com/dotnet/aspnetcore/tree/master/src/SignalR).
 
-![img](https://github.com/yjs/ycs/blob/main/ycs.gif)
+![img](https://github.com/yjs/ycs/blob/main/docs/ycs.gif)
