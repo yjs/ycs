@@ -13,19 +13,22 @@ namespace Ycs
     {
         public readonly AbstractType Type;
         public readonly int Index;
+        public readonly int Assoc;
 
-        public AbsolutePosition(AbstractType type, int index)
+        public AbsolutePosition(AbstractType type, int index, int assoc = 0)
         {
             Type = type;
             Index = index;
+            Assoc = assoc;
         }
 
-        public static AbsolutePosition TryCreateFromAbsolutePosition(RelativePosition rpos, YDoc doc)
+        public static AbsolutePosition TryCreateFromRelativePosition(RelativePosition rpos, YDoc doc)
         {
             var store = doc.Store;
             var rightId = rpos.Item;
             var typeId = rpos.TypeId;
             var tName = rpos.TName;
+            var assoc = rpos.Assoc;
             int index = 0;
             AbstractType type;
 
@@ -48,7 +51,8 @@ namespace Ycs
 
                 if (type._item == null || !type._item.Deleted)
                 {
-                    index = right.Deleted || !right.Countable ? 0 : res.diff;
+                    // Adjust position based on the left assotiation, if necessary.
+                    index = (right.Deleted || !right.Countable) ? 0 : (res.diff + (assoc >= 0 ? 0 : 1));
                     var n = right.Left as Item;
                     while (n != null)
                     {
@@ -91,10 +95,10 @@ namespace Ycs
                     throw new Exception();
                 }
 
-                index = type.Length;
+                index = assoc >= 0 ? type.Length : 0;
             }
 
-            return new AbsolutePosition(type, index);
+            return new AbsolutePosition(type, index, assoc);
         }
     }
 }

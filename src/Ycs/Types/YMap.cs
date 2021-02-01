@@ -4,7 +4,6 @@
 //  </copyright>
 // ------------------------------------------------------------------------------
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,11 +44,11 @@ namespace Ycs
             _prelimContent = entries != null ? new Dictionary<string, object>(entries) : new Dictionary<string, object>();
         }
 
-        public int Count => _prelimContent?.Count ?? EnumerateMap().Count();
+        public int Count => _prelimContent?.Count ?? TypeMapEnumerate().Count();
 
         public object Get(string key)
         {
-            if (!TryMapGet(key, out var value))
+            if (!TryTypeMapGet(key, out var value))
             {
                 throw new KeyNotFoundException();
             }
@@ -92,13 +91,28 @@ namespace Ycs
             return _map.TryGetValue(key, out var val) && !val.Deleted;
         }
 
-        public IEnumerable<string> Keys() => EnumerateMap().Select(kvp => kvp.Key);
+        public IEnumerable<string> Keys() => TypeMapEnumerate().Select(kvp => kvp.Key);
 
-        public IEnumerable<object> Values() => EnumerateMap().Select(kvp => kvp.Value.Content.GetContent()[kvp.Value.Length - 1]);
+        public IEnumerable<object> Values() => TypeMapEnumerate().Select(kvp => kvp.Value.Content.GetContent()[kvp.Value.Length - 1]);
 
-        internal override AbstractType Copy()
+        public YMap Clone() => InternalClone() as YMap;
+
+        internal override AbstractType InternalCopy()
         {
             return new YMap();
+        }
+
+        internal override AbstractType InternalClone()
+        {
+            var map = new YMap();
+
+            foreach (var kvp in TypeMapEnumerate())
+            {
+                // TODO: [alekseyk] Yjs checks for the AbstractType here, but _map can only have 'Item' values. Might be an error?
+                map.Set(kvp.Key, kvp.Value);
+            }
+
+            return map;
         }
 
         internal override void Integrate(YDoc doc, Item item)
@@ -128,90 +142,7 @@ namespace Ycs
             return new YMap();
         }
 
-        private void TypeMapDelete(Transaction transaction, string key)
-        {
-            if (_map.TryGetValue(key, out var c))
-            {
-                c.Delete(transaction);
-            }
-        }
-
-        private void TypeMapSet(Transaction transaction, string key, object value)
-        {
-            if (!_map.TryGetValue(key, out var left))
-            {
-                left = null;
-            }
-
-            var doc = transaction.Doc;
-            var ownClientId = doc.ClientId;
-            IContent content;
-
-            if (value == null)
-            {
-                content = new ContentAny(new object[] { value });
-            }
-            else
-            {
-                switch (value)
-                {
-                    case YDoc d:
-                        content = new ContentDoc(d);
-                        break;
-                    case AbstractType at:
-                        content = new ContentType(at);
-                        break;
-                    case byte[] ba:
-                        content = new ContentBinary(ba);
-                        break;
-                    default:
-                        content = new ContentAny(new[] { value });
-                        break;
-                }
-            }
-
-            var newItem = new Item(new ID(ownClientId, doc.Store.GetState(ownClientId)), left, left?.LastId, null, null, this, key, content);
-            newItem.Integrate(transaction, 0);
-        }
-
-        private bool TryMapGet(string key, out object value)
-        {
-            if (_map.TryGetValue(key, out var val) && !val.Deleted)
-            {
-                value = val.Content.GetContent()[val.Length - 1];
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
-
-        private object TypeMapGetSnapshot(string key, Snapshot snapshot)
-        {
-            if (!_map.TryGetValue(key, out var v))
-            {
-                v = null;
-            }
-
-            while (v != null && (!snapshot.StateVector.ContainsKey(v.Id.Client) || v.Id.Clock >= snapshot.StateVector[v.Id.Client]))
-            {
-                v = v.Left as Item;
-            }
-
-            return v != null && v.IsVisible(snapshot) ? v.Content.GetContent()[v.Length - 1] : null;
-        }
-
-        private IEnumerable<KeyValuePair<string, Item>> EnumerateMap() => _map.Where(kvp => !kvp.Value.Deleted);
-
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-        {
-            return EnumerateMap().Select(kvp =>
-            {
-                var key = kvp.Key;
-                var value = kvp.Value.Content.GetContent()[kvp.Value.Length - 1];
-                return new KeyValuePair<string, object>(key, value);
-            }).GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => TypeMapEnumerateValues().GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

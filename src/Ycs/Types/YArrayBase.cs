@@ -328,6 +328,66 @@ namespace Ycs
             }
         }
 
+        protected IReadOnlyList<object> InternalSlice(int start, int end)
+        {
+            if (start < 0)
+            {
+                start += Length;
+            }
+
+            if (end < 0)
+            {
+                end += Length;
+            }
+
+            if (start < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start));
+            }
+
+            if (end < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(end));
+            }
+
+            if (start > end)
+            {
+                throw new ArgumentOutOfRangeException(nameof(end));
+            }
+
+            int length = end - start;
+            Debug.Assert(length >= 0);
+
+            var cs = new List<object>();
+            var n = _start;
+
+            while (n != null && length > 0)
+            {
+                if (n.Countable && !n.Deleted)
+                {
+                    var c = n.Content.GetContent();
+                    if (c.Count <= start)
+                    {
+                        start -= c.Count;
+                    }
+                    else
+                    {
+                        for (int i = start; i < c.Count && length > 0; i++)
+                        {
+                            cs.Add(c[i]);
+                            length--;
+                        }
+
+                        start = 0;
+                    }
+                }
+
+                n = n.Right as Item;
+            }
+
+            return cs.AsReadOnly();
+        }
+
         protected void ForEach(Action<object, int, YArrayBase> fun)
         {
             int index = 0;
@@ -482,6 +542,5 @@ namespace Ycs
                 return _searchMarkers.MarkPosition(p, pIndex);
             }
         }
-
     }
 }

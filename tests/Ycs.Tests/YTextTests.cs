@@ -7,6 +7,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -343,6 +344,45 @@ namespace Ycs
         }
 
         [TestMethod]
+        public void TestMultilineFormat()
+        {
+            Init(users: 1);
+            var text0 = Texts[Users[0]];
+
+            text0.Insert(0, "Test\nMulti-line\nFormatting");
+            text0.ApplyDelta(new List<Delta>
+            {
+                new Delta { Retain = 4, Attributes = new Dictionary<string, object> { { "bold", true } } },
+                new Delta { Retain = 1 }, // newline character
+                new Delta { Retain = 10, Attributes = new Dictionary<string, object> { { "bold", true } } },
+                new Delta { Retain = 1 }, // newline character
+                new Delta { Retain = 10, Attributes = new Dictionary<string, object> { { "bold", true } } }
+            });
+
+            var delta = text0.ToDelta();
+
+            Assert.AreEqual(5, delta.Count);
+
+            Assert.AreEqual("Test", delta[0].Insert);
+            Assert.IsTrue(delta[0].Attributes?.ContainsKey("bold") ?? false);
+            Assert.AreEqual(true, delta[0].Attributes["bold"]);
+
+            Assert.AreEqual("\n", delta[1].Insert);
+            Assert.AreEqual(0, delta[1].Attributes?.Count ?? 0);
+
+            Assert.AreEqual("Multi-line", delta[2].Insert);
+            Assert.IsTrue(delta[2].Attributes?.ContainsKey("bold") ?? false);
+            Assert.AreEqual(true, delta[2].Attributes["bold"]);
+
+            Assert.AreEqual("\n", delta[3].Insert);
+            Assert.AreEqual(0, delta[3].Attributes?.Count ?? 0);
+
+            Assert.AreEqual("Formatting", delta[4].Insert);
+            Assert.IsTrue(delta[4].Attributes?.ContainsKey("bold") ?? false);
+            Assert.AreEqual(true, delta[4].Attributes["bold"]);
+        }
+
+        [TestMethod]
         public void TestInsertAndDeleteAtRandomPositions()
         {
             const int N = 10_000;
@@ -450,6 +490,24 @@ namespace Ycs
 
                 CompareUsers();
             }
+        }
+
+        [TestMethod]
+        public void TestAttributes()
+        {
+            Init(users: 1);
+            var text0 = Texts[Users[0]];
+
+            text0.EventHandler += (sender, args) =>
+            {
+                Assert.IsTrue(args?.Event?.Changes?.Keys?.ContainsKey("test") ?? false);
+                Assert.AreEqual(ChangeAction.Add, args.Event.Changes.Keys["test"].Action);
+                Assert.IsNull(args.Event.Changes.Keys["test"].OldValue);
+            };
+
+            text0.SetAttribute("test", 42);
+            Assert.AreEqual(42, text0.GetAttribute("test"));
+            CollectionAssert.AreEqual(new[] { new KeyValuePair<string, object>("test", 42) }, text0.GetAttributes().ToArray());
         }
 
         [DataTestMethod]

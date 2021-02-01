@@ -366,11 +366,6 @@ namespace Ycs
                     }
 
                     result = stackItem;
-
-                    if (result != null)
-                    {
-                        StackItemPopped?.Invoke(this, new StackEventArgs(result, eventType));
-                    }
                 }
 
                 foreach (var kvp in transaction.Changed)
@@ -385,6 +380,11 @@ namespace Ycs
                     }
                 }
             }, origin: this);
+
+            if (result != null)
+            {
+                StackItemPopped?.Invoke(this, new StackEventArgs(result, eventType));
+            }
 
             return result;
         }

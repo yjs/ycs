@@ -477,8 +477,9 @@ namespace Ycs
         [TestMethod]
         public void TestYMapEventExceptionsShouldCompleteTransaction()
         {
-            var doc = new YDoc();
-            var map = doc.GetMap("map");
+            Init(users: 1);
+            var doc = Users[0];
+            var map = Maps[Users[0]];
 
             bool updateCalled = false;
             bool throwingObserverCalled = false;

@@ -182,7 +182,7 @@ namespace Ycs
         public event EventHandler<Transaction> AfterTransactionCleanup;
         public event EventHandler BeforeAllTransactions;
         public event EventHandler<IList<Transaction>> AfterAllTransactions;
-        public event EventHandler<(byte[] data, object origin)> UpdateV2;
+        public event EventHandler<(byte[] data, object origin, Transaction transaction)> UpdateV2;
         public event EventHandler Destroyed;
         public event EventHandler<(ISet<YDoc> Loaded, ISet<YDoc> Added, ISet<YDoc> Removed)> SubdocsChanged;
 
@@ -411,7 +411,7 @@ namespace Ycs
                     var hasContent = transaction.WriteUpdateMessageFromTransaction(encoder);
                     if (hasContent)
                     {
-                        handler.Invoke(this, (encoder.ToArray(), transaction.Origin));
+                        handler.Invoke(this, (encoder.ToArray(), transaction.Origin, transaction));
                     }
                 }
             }

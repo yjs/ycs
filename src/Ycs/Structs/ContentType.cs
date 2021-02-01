@@ -27,7 +27,7 @@ namespace Ycs
 
         public IReadOnlyList<object> GetContent() => new object[] { Type };
 
-        public IContent Copy() => new ContentType(Type.Copy());
+        public IContent Copy() => new ContentType(Type.InternalCopy());
 
         public IContent Splice(int offset) => throw new NotImplementedException();
 

@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace Ycs
@@ -23,13 +22,40 @@ namespace Ycs
             Retain
         }
 
+        private readonly ISet<string> _subs;
         private IList<Delta> _delta = null;
 
-        internal YTextEvent(YText arr, Transaction transaction)
+        internal YTextEvent(YText arr, Transaction transaction, ISet<string> subs)
             : base(arr, transaction)
         {
-            // Do nothing.
+            _subs = subs;
+            KeysChanged = new HashSet<string>();
+
+            if (_subs?.Count > 0)
+            {
+                foreach (var sub in _subs)
+                {
+                    if (sub == null)
+                    {
+                        ChildListChanged = true;
+                    }
+                    else
+                    {
+                        KeysChanged.Add(sub);
+                    }
+                }
+            }
         }
+
+        /// <summary>
+        /// Gets the changed attribute names.
+        /// </summary>
+        public ISet<string> KeysChanged { get; }
+
+        /// <summary>
+        /// Gets whether the children keys changed.
+        /// </summary>
+        public bool ChildListChanged { get; }
 
         /// <summary>
         /// Compute the changes in the delta format.
@@ -414,6 +440,9 @@ namespace Ycs
                 {
                     left = new Item(new ID(ownClientId, doc.Store.GetState(ownClientId)), left, left?.LastId, right, right?.Id, parent, null, new ContentFormat(kvp.Key, kvp.Value));
                     left.Integrate(transaction, 0);
+
+                    CurrentAttributes[kvp.Key] = kvp.Value;
+                    UpdateCurrentAttributes(CurrentAttributes, left.Content as ContentFormat);
                 }
             }
 
@@ -743,6 +772,42 @@ namespace Ycs
             return sb.ToString();
         }
 
+        public YText Clone() => InternalClone() as YText;
+
+        public void RemoveAttribute(string name)
+        {
+            if (Doc != null)
+            {
+                Doc.Transact(tr =>
+                {
+                    TypeMapDelete(tr, name);
+                });
+            }
+            else
+            {
+                _pending.Add(() => RemoveAttribute(name));
+            }
+        }
+
+        public void SetAttribute(string name, object value)
+        {
+            if (Doc != null)
+            {
+                Doc.Transact(tr =>
+                {
+                    TypeMapSet(tr, name, value);
+                });
+            }
+            else
+            {
+                _pending.Add(() => SetAttribute(name, value));
+            }
+        }
+
+        public object GetAttribute(string name) => TryTypeMapGet(name, out var value) ? value : null;
+
+        public IEnumerable<KeyValuePair<string, object>> GetAttributes() => TypeMapEnumerateValues();
+
         internal override void Integrate(YDoc doc, Item item)
         {
             base.Integrate(doc, item);
@@ -755,11 +820,18 @@ namespace Ycs
             _pending = null;
         }
 
+        internal override AbstractType InternalClone()
+        {
+            var text = new YText();
+            text.ApplyDelta(ToDelta());
+            return text;
+        }
+
         internal override void CallObserver(Transaction transaction, ISet<string> parentSubs)
         {
             base.CallObserver(transaction, parentSubs);
 
-            var evt = new YTextEvent(this, transaction);
+            var evt = new YTextEvent(this, transaction, parentSubs);
             var doc = transaction.Doc;
 
             // If a remote change happened, we try to cleanup potential formatting duplicates.

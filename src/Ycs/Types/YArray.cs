@@ -36,6 +36,8 @@ namespace Ycs
 
         public override int Length => _prelimContent?.Count ?? base.Length;
 
+        public YArray Clone() => InternalClone() as YArray;
+
         internal override void Integrate(YDoc doc, Item item)
         {
             base.Integrate(doc, item);
@@ -43,9 +45,28 @@ namespace Ycs
             _prelimContent = null;
         }
 
-        internal override AbstractType Copy()
+        internal override AbstractType InternalCopy()
         {
             return new YArray();
+        }
+
+        internal override AbstractType InternalClone()
+        {
+            var arr = new YArray();
+
+            foreach (var item in EnumerateList())
+            {
+                if (item is AbstractType at)
+                {
+                    arr.Add(new[] { at.InternalClone() });
+                }
+                else
+                {
+                    arr.Add(new[] { item });
+                }
+            }
+
+            return arr;
         }
 
         internal override void Write(IUpdateEncoder encoder)
@@ -110,6 +131,10 @@ namespace Ycs
             }
         }
 
+        public IReadOnlyList<object> Slice(int start = 0) => InternalSlice(start, Length);
+
+        public IReadOnlyList<object> Slice(int start, int end) => InternalSlice(start, end);
+
         public object Get(int index)
         {
             var marker = FindMarker(index);
@@ -140,6 +165,12 @@ namespace Ycs
         public IList<object> ToArray()
         {
             var cs = new List<object>();
+            cs.AddRange(EnumerateList());
+            return cs;
+        }
+
+        private IEnumerable<object> EnumerateList()
+        {
             var n = _start;
 
             while (n != null)
@@ -147,13 +178,14 @@ namespace Ycs
                 if (n.Countable && !n.Deleted)
                 {
                     var c = n.Content.GetContent();
-                    cs.AddRange(c);
+                    foreach (var item in c)
+                    {
+                        yield return item;
+                    }
                 }
 
                 n = n.Right as Item;
             }
-
-            return cs;
         }
     }
 }

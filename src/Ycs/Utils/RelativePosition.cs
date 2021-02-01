@@ -27,9 +27,21 @@ namespace Ycs
         public readonly ID? TypeId;
         public readonly string TName;
 
-        public RelativePosition(AbstractType type, ID? item)
+        /// <summary>
+        /// A relative position is associated to a specific character.
+        /// By default, the value is <c>&gt;&eq; 0</c>, the relative position is associated to the character
+        /// after the meant position.
+        /// I.e. position <c>1</c> in <c>'ab'</c> is associated with the character <c>'b'</c>.
+        /// <br/>
+        /// If the value is <c>&lt; 0</c>, then the relative position is associated with the caharacter
+        /// before the meant position.
+        /// </summary>
+        public int Assoc;
+
+        public RelativePosition(AbstractType type, ID? item, int assoc = 0)
         {
             Item = item;
+            Assoc = assoc;
 
             if (type._item == null)
             {
@@ -50,11 +62,12 @@ namespace Ycs
         }
         */
 
-        private RelativePosition(ID? typeId, string tname, ID? item)
+        private RelativePosition(ID? typeId, string tname, ID? item, int assoc)
         {
             TypeId = typeId;
             TName = tname;
             Item = item;
+            Assoc = assoc;
         }
 
         public bool Equals(RelativePosition other)
@@ -67,14 +80,26 @@ namespace Ycs
             return other != null
                 && string.Equals(TName, other.TName)
                 && ID.Equals(Item, other.Item)
-                && ID.Equals(TypeId, other.TypeId);
+                && ID.Equals(TypeId, other.TypeId)
+                && Assoc == other.Assoc;
         }
 
         /// <summary>
         /// Create a relative position based on an absolute position.
         /// </summary>
-        public static RelativePosition FromTypeIndex(AbstractType type, int index)
+        public static RelativePosition FromTypeIndex(AbstractType type, int index, int assoc = 0)
         {
+            if (assoc < 0)
+            {
+                // Associated with the left character or the beginning of a type, decrement index if possible.
+                if (index == 0)
+                {
+                    return new RelativePosition(type, type._item?.Id, assoc);
+                }
+
+                index--;
+            }
+
             var t = type._start;
             while (t != null)
             {
@@ -83,16 +108,22 @@ namespace Ycs
                     if (t.Length > index)
                     {
                         // Case 1: found position somewhere in the linked list.
-                        return new RelativePosition(type, new ID(t.Id.Client, t.Id.Clock + index));
+                        return new RelativePosition(type, new ID(t.Id.Client, t.Id.Clock + index), assoc);
                     }
 
                     index -= t.Length;
                 }
 
+                if (t.Right == null && assoc < 0)
+                {
+                    // Left-associated position, return last available id.
+                    return new RelativePosition(type, t.LastId, assoc);
+                }
+
                 t = t.Right as Item;
             }
 
-            return new RelativePosition(type, null);
+            return new RelativePosition(type, type._item?.Id, assoc);
         }
 
         public void Write(Stream writer)
@@ -119,27 +150,44 @@ namespace Ycs
             {
                 throw new Exception();
             }
+
+            writer.WriteVarInt(Assoc, treatZeroAsNegative: false);
+        }
+
+        public static RelativePosition Read(byte[] encodedPosition)
+        {
+            using (var stream = new MemoryStream(encodedPosition))
+            {
+                return Read(stream);
+            }
         }
 
         public static RelativePosition Read(Stream reader)
         {
+            ID? itemId = null;
+            ID? typeId = null;
+            string tName = null;
+
             switch (reader.ReadVarUint())
             {
                 case 0:
                     // Case 1: Found position somewhere in the linked list.
-                    var itemId = ID.Read(reader);
-                    return new RelativePosition(null, null, itemId);
+                    itemId = ID.Read(reader);
+                    break;
                 case 1:
                     // Case 2: Found position at the end of the list and type is stored in y.share.
-                    var tName = reader.ReadVarString();
-                    return new RelativePosition(null, tName, null);
+                    tName = reader.ReadVarString();
+                    break;
                 case 2:
                     // Case 3: Found position at the end of the list and type is attached to an item.
-                    var typeId = ID.Read(reader);
-                    return new RelativePosition(typeId, null, null);
+                    typeId = ID.Read(reader);
+                    break;
                 default:
                     throw new Exception();
             }
+
+            int assoc = reader.Position < reader.Length ? reader.ReadVarInt().Value : 0;
+            return new RelativePosition(typeId, tName, itemId, assoc);
         }
 
         public byte[] ToArray()

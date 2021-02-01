@@ -126,7 +126,7 @@ namespace YcsSample.Hubs
                             var update = DecodeString(message.Data);
 
                             string localUpdate = null;
-                            EventHandler<(byte[] data, object origin)> updateHandler = (sender, e) => localUpdate = EncodeBytes(e.data);
+                            EventHandler<(byte[] data, object origin, Transaction transaction)> updateHandler = (sender, e) => localUpdate = EncodeBytes(e.data);
 
                             lock (_syncRoot)
                             {

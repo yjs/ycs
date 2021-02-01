@@ -7,7 +7,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -439,8 +438,8 @@ namespace Ycs
         [TestMethod]
         public void TestIteratingArrayContainingTypes()
         {
-            var y = new YDoc();
-            var arr = y.GetArray("arr");
+            Init(users: 1);
+            var arr = Arrays[Users[0]];
             const int numItems = 10;
 
             for (int i = 0; i < numItems; i++)
@@ -455,8 +454,22 @@ namespace Ycs
             {
                 Assert.AreEqual(cnt++, (item as YMap).Get("value"));
             }
+        }
 
-            y.Destroy();
+        [TestMethod]
+        public void TestSlice()
+        {
+            Init(users: 1);
+            var arr = Arrays[Users[0]];
+
+            arr.Insert(0, new object[] { 1, 2, 3 });
+            CollectionAssert.AreEqual(new object[] { 1, 2, 3 }, arr.Slice(0).ToArray());
+            CollectionAssert.AreEqual(new object[] { 2, 3 }, arr.Slice(1).ToArray());
+            CollectionAssert.AreEqual(new object[] { 1, 2 }, arr.Slice(0, -1).ToArray());
+
+            arr.Insert(0, new object[] { 0 });
+            CollectionAssert.AreEqual(new object[] { 0, 1, 2, 3 }, arr.Slice(0).ToArray());
+            CollectionAssert.AreEqual(new object[] { 0, 1 }, arr.Slice(0, 2).ToArray());
         }
 
         [DataTestMethod]
