@@ -39,19 +39,21 @@ namespace Ycs
             // Debug.WriteLine($"MSG {sender.ClientId} -> {receiver.ClientId}, len {m.Length}:");
             // Debug.WriteLine(string.Join(",", m));
 
-            using var writer = new MemoryStream();
-            using (var reader = new MemoryStream(m))
+            using (var writer = new MemoryStream())
             {
-                SyncProtocol.ReadSyncMessage(reader, writer, receiver, receiver._tc);
-            }
+                using (var reader = new MemoryStream(m))
+                {
+                    SyncProtocol.ReadSyncMessage(reader, writer, receiver, receiver._tc);
+                }
 
-            if (writer.Length > 0)
-            {
-                // Send reply message.
-                var replyMessage = writer.ToArray();
-                // Debug.WriteLine($"REPLY {receiver.ClientId} -> {sender.ClientId}, len {replyMessage.Length}:");
-                // Debug.WriteLine(string.Join(",", replyMessage));
-                sender.Receive(replyMessage, receiver);
+                if (writer.Length > 0)
+                {
+                    // Send reply message.
+                    var replyMessage = writer.ToArray();
+                    // Debug.WriteLine($"REPLY {receiver.ClientId} -> {sender.ClientId}, len {replyMessage.Length}:");
+                    // Debug.WriteLine(string.Join(",", replyMessage));
+                    sender.Receive(replyMessage, receiver);
+                }
             }
 
             return true;

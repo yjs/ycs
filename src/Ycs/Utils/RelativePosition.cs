@@ -144,9 +144,11 @@ namespace Ycs
 
         public byte[] ToArray()
         {
-            using var stream = new MemoryStream();
-            Write(stream);
-            return stream.ToArray();
+            using (var stream = new MemoryStream())
+            {
+                Write(stream);
+                return stream.ToArray();
+            }
         }
     }
 }

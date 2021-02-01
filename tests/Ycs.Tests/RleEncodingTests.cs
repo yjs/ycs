@@ -54,12 +54,14 @@ namespace Ycs
             }
 
             var data = encoder.ToArray();
-            using var stream = new MemoryStream(data);
-            var decoder = new StringDecoder(stream);
-
-            for (int i = 0; i < words.Count; i++)
+            using (var stream = new MemoryStream(data))
             {
-                Assert.AreEqual(words[i], decoder.Read());
+                var decoder = new StringDecoder(stream);
+
+                for (int i = 0; i < words.Count; i++)
+                {
+                    Assert.AreEqual(words[i], decoder.Read());
+                }
             }
         }
 
@@ -75,12 +77,14 @@ namespace Ycs
             }
 
             var data = encoder.ToArray();
-            using var stream = new MemoryStream(data);
-            var decoder = new StringDecoder(stream);
-
-            for (int i = 0; i < n; i++)
+            using (var stream = new MemoryStream(data))
             {
-                Assert.AreEqual(string.Empty, decoder.Read());
+                var decoder = new StringDecoder(stream);
+
+                for (int i = 0; i < n; i++)
+                {
+                    Assert.AreEqual(string.Empty, decoder.Read());
+                }
             }
         }
 
@@ -100,17 +104,19 @@ namespace Ycs
             }
 
             var data = encoder.ToArray();
-            using var stream = new MemoryStream(data);
-            var decoder = createDecoder(stream);
-
-            for (int i = -n; i < n; i++)
+            using (var stream = new MemoryStream(data))
             {
-                Assert.AreEqual(i, decoder.Read());
+                var decoder = createDecoder(stream);
 
-                // Read additional 'i' times.
-                for (int j = 0; j < i; j++)
+                for (int i = -n; i < n; i++)
                 {
                     Assert.AreEqual(i, decoder.Read());
+
+                    // Read additional 'i' times.
+                    for (int j = 0; j < i; j++)
+                    {
+                        Assert.AreEqual(i, decoder.Read());
+                    }
                 }
             }
         }
@@ -131,17 +137,19 @@ namespace Ycs
             }
 
             var data = encoder.ToArray();
-            using var stream = new MemoryStream(data);
-            var decoder = createDecoder(stream);
-
-            for (byte i = 0; i < n; i++)
+            using (var stream = new MemoryStream(data))
             {
-                Assert.AreEqual(i, decoder.Read());
+                var decoder = createDecoder(stream);
 
-                // Read additional 'i' times.
-                for (byte j = 0; j < i; j++)
+                for (byte i = 0; i < n; i++)
                 {
                     Assert.AreEqual(i, decoder.Read());
+
+                    // Read additional 'i' times.
+                    for (byte j = 0; j < i; j++)
+                    {
+                        Assert.AreEqual(i, decoder.Read());
+                    }
                 }
             }
         }

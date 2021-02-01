@@ -303,16 +303,20 @@ namespace Ycs
         {
             Transact(tr =>
             {
-                using var structDecoder = new UpdateDecoderV2(input);
-                EncodingUtils.ReadStructs(structDecoder, tr, Store);
-                Store.ReadAndApplyDeleteSet(structDecoder, tr);
+                using (var structDecoder = new UpdateDecoderV2(input))
+                {
+                    EncodingUtils.ReadStructs(structDecoder, tr, Store);
+                    Store.ReadAndApplyDeleteSet(structDecoder, tr);
+                }
             }, transactionOrigin, local);
         }
 
         public void ApplyUpdateV2(byte[] update, object transactionOrigin = null, bool local = false)
         {
-            using var input = new MemoryStream(update, writable: false);
-            ApplyUpdateV2(input, transactionOrigin, local);
+            using (var input = new MemoryStream(update, writable: false))
+            {
+                ApplyUpdateV2(input, transactionOrigin, local);
+            }
         }
 
         /// <summary>
@@ -323,19 +327,23 @@ namespace Ycs
         /// </summary>
         public byte[] EncodeStateAsUpdateV2(byte[] encodedTargetStateVector = null)
         {
-            using var encoder = new UpdateEncoderV2();
-            var targetStateVector = encodedTargetStateVector == null
-                ? new Dictionary<int, int>()
-                : EncodingUtils.DecodeStateVector(new MemoryStream(encodedTargetStateVector, writable: false));
-            WriteStateAsUpdate(encoder, targetStateVector);
-            return encoder.ToArray();
+            using (var encoder = new UpdateEncoderV2())
+            {
+                var targetStateVector = encodedTargetStateVector == null
+                    ? new Dictionary<int, int>()
+                    : EncodingUtils.DecodeStateVector(new MemoryStream(encodedTargetStateVector, writable: false));
+                WriteStateAsUpdate(encoder, targetStateVector);
+                return encoder.ToArray();
+            }
         }
 
         public byte[] EncodeStateVectorV2()
         {
-            using var encoder = new DSEncoderV2();
-            WriteStateVector(encoder);
-            return encoder.ToArray();
+            using (var encoder = new DSEncoderV2())
+            {
+                WriteStateVector(encoder);
+                return encoder.ToArray();
+            }
         }
 
         /// <summary>
@@ -398,11 +406,13 @@ namespace Ycs
             var handler = UpdateV2;
             if (handler != null)
             {
-                using var encoder = new UpdateEncoderV2();
-                var hasContent = transaction.WriteUpdateMessageFromTransaction(encoder);
-                if (hasContent)
+                using (var encoder = new UpdateEncoderV2())
                 {
-                    handler.Invoke(this, (encoder.ToArray(), transaction.Origin));
+                    var hasContent = transaction.WriteUpdateMessageFromTransaction(encoder);
+                    if (hasContent)
+                    {
+                        handler.Invoke(this, (encoder.ToArray(), transaction.Origin));
+                    }
                 }
             }
         }

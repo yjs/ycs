@@ -92,14 +92,24 @@ namespace Ycs
 
         public void CleanupPendingStructs()
         {
+#if NETSTANDARD2_0
+            // NOTE: We cannot delete items from the Dictionary while iterating over it in netstandard2.0.
+            var clientsToRemove = new List<int>();
+#endif // NETSTANDARD2_0
+
             // Cleanup pendingCLientsStructs if not fully finished.
             foreach (var kvp in _pendingClientStructRefs)
             {
                 var client = kvp.Key;
                 var refs = kvp.Value;
+
                 if (refs.NextReadOperation == refs.Refs.Count)
                 {
+#if NETSTANDARD2_0
+                    clientsToRemove.Add(client);
+#else
                     _pendingClientStructRefs.Remove(client);
+#endif // NETSTANDARD2_0
                 }
                 else
                 {
@@ -107,6 +117,16 @@ namespace Ycs
                     refs.NextReadOperation = 0;
                 }
             }
+
+#if NETSTANDARD2_0
+            if (clientsToRemove.Count > 0)
+            {
+                foreach (var key in clientsToRemove)
+                {
+                    _pendingClientStructRefs.Remove(key);
+                }
+            }
+#endif // NETSTANDARD2_0
         }
 
         public void AddStruct(AbstractStruct str)
@@ -379,9 +399,11 @@ namespace Ycs
             if (unappliedDs.Clients.Count > 0)
             {
                 // @TODO: No need for encoding+decoding ds anymore.
-                using var unappliedDsEncoder = new DSEncoderV2();
-                unappliedDs.Write(unappliedDsEncoder);
-                _pendingDeleteReaders.Add(new DSDecoderV2(new MemoryStream(unappliedDsEncoder.ToArray())));
+                using (var unappliedDsEncoder = new DSEncoderV2())
+                {
+                    unappliedDs.Write(unappliedDsEncoder);
+                    _pendingDeleteReaders.Add(new DSDecoderV2(new MemoryStream(unappliedDsEncoder.ToArray())));
+                }
             }
         }
 

@@ -6,7 +6,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Ycs
 {
@@ -28,10 +27,11 @@ namespace Ycs
             {
                 if (e.origin != _tc)
                 {
-                    using var stream = new MemoryStream();
-                    SyncProtocol.WriteUpdate(stream, e.data);
-
-                    BroadcastMessage(this, stream.ToArray());
+                    using (var stream = new MemoryStream())
+                    {
+                        SyncProtocol.WriteUpdate(stream, e.data);
+                        BroadcastMessage(this, stream.ToArray());
+                    }
                 }
             };
 
@@ -58,20 +58,22 @@ namespace Ycs
             {
                 _tc._onlineConns.Add(this);
 
-                using var stream = new MemoryStream();
-                SyncProtocol.WriteSyncStep1(stream, this);
-
-                // Publish SyncStep1
-                BroadcastMessage(this, stream.ToArray());
-
-                foreach (var remoteYInstance in _tc._onlineConns)
+                using (var stream = new MemoryStream())
                 {
-                    if (remoteYInstance != this)
-                    {
-                        stream.SetLength(0);
-                        SyncProtocol.WriteSyncStep1(stream, remoteYInstance);
+                    SyncProtocol.WriteSyncStep1(stream, this);
 
-                        Receive(stream.ToArray(), remoteYInstance);
+                    // Publish SyncStep1
+                    BroadcastMessage(this, stream.ToArray());
+
+                    foreach (var remoteYInstance in _tc._onlineConns)
+                    {
+                        if (remoteYInstance != this)
+                        {
+                            stream.SetLength(0);
+                            SyncProtocol.WriteSyncStep1(stream, remoteYInstance);
+
+                            Receive(stream.ToArray(), remoteYInstance);
+                        }
                     }
                 }
             }

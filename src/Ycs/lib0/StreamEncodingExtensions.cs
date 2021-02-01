@@ -105,7 +105,7 @@ namespace Ycs
         public static void WriteVarUint8Array(this Stream stream, byte[] array)
         {
             stream.WriteVarUint((uint)array.Length);
-            stream.Write(array);
+            stream.Write(array, 0, array.Length);
         }
 
         /// <summary>
@@ -153,10 +153,20 @@ namespace Ycs
                     stream.WriteByte((byte)(b ? 120 : 121));
                     break;
                 case double d: // TYPE 123: FLOAT64
+#if NETSTANDARD2_0
+                    var dBytes = BitConverter.GetBytes(d);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(dBytes);
+                    }
+                    stream.WriteByte(123);
+                    stream.Write(dBytes, 0, dBytes.Length);
+                    break;
+#elif NETSTANDARD2_1
                     Span<byte> dBytes = stackalloc byte[8];
                     if (!BitConverter.TryWriteBytes(dBytes, d))
                     {
-                        throw new InvalidDataException("Unable to write double value.");
+                        throw new InvalidDataException("Unable to write a double value.");
                     }
                     if (BitConverter.IsLittleEndian)
                     {
@@ -165,11 +175,22 @@ namespace Ycs
                     stream.WriteByte(123);
                     stream.Write(dBytes);
                     break;
+#endif // NETSTANDARD2_0
                 case float f: // TYPE 124: FLOAT32
+#if NETSTANDARD2_0
+                    var fBytes = BitConverter.GetBytes(f);
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(fBytes);
+                    }
+                    stream.WriteByte(124);
+                    stream.Write(fBytes, 0, fBytes.Length);
+                    break;
+#elif NETSTANDARD2_1
                     Span<byte> fBytes = stackalloc byte[4];
                     if (!BitConverter.TryWriteBytes(fBytes, f))
                     {
-                        throw new InvalidDataException("Unable to write float value.");
+                        throw new InvalidDataException("Unable to write a float value.");
                     }
                     if (BitConverter.IsLittleEndian)
                     {
@@ -178,6 +199,7 @@ namespace Ycs
                     stream.WriteByte(124);
                     stream.Write(fBytes);
                     break;
+#endif // NETSTANDARD2_0
                 case int i: // TYPE 125: INTEGER
                     stream.WriteByte(125);
                     stream.WriteVarInt(i);

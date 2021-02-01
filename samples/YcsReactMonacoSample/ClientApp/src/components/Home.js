@@ -3,7 +3,6 @@ import MonacoEditor from 'react-monaco-editor';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import * as Y from 'yjs';
 import { createMutex } from 'lib0/mutex.js';
-import { EncodingUtils } from '../util/encodingUtils.js';
 import { SyncProtocol } from '../util/syncProtocol.js';
 
 export class Home extends Component {
@@ -15,6 +14,7 @@ export class Home extends Component {
   _monacoModel = null;
   _connection = null;
   _mux = null;
+  _protocol = null;
 
   constructor(props) {
     super(props);
@@ -34,28 +34,7 @@ export class Home extends Component {
       .withAutomaticReconnect()
       .build();
 
-    this._connection
-      .start()
-      .then(() => {
-          this._connection.on('getMissing_result_v2', message => {
-            SyncProtocol.readSyncStep2(this._ydoc, message, this);
-          });
-
-          this._connection.on('updatev2', message => {
-            SyncProtocol.readSyncStep2(this._ydoc, message, this);
-          });
-
-          // Always send step1 when connected.
-          SyncProtocol.writeSyncStep1(this._ydoc, this._connection);
-      })
-      .catch(e => console.log('Connection failed: ', e));
-
-    this._ydoc.on('updateV2', (update, origin) => {
-      if (origin !== this || origin !== null) {
-        var encodedUpdate = EncodingUtils.byteArrayToString(update);
-        this._connection.send("updateV2", encodedUpdate);
-      }
-    });
+    this._protocol = new SyncProtocol(this._ydoc, this._connection, this);
   }
 
   editorDidMount(editor, monaco) {

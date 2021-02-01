@@ -40,11 +40,13 @@ namespace Ycs
         [DataRow(4_294_967_295u, new byte[] { 255, 255, 255, 255, 15 })]
         public void TestGolangBinaryEncodingCompatibility(uint value, byte[] expected)
         {
-            using var stream = new MemoryStream();
-            stream.WriteVarUint(value);
+            using (var stream = new MemoryStream())
+            {
+                stream.WriteVarUint(value);
 
-            var actual = stream.ToArray();
-            CollectionAssert.AreEqual(expected, actual);
+                var actual = stream.ToArray();
+                CollectionAssert.AreEqual(expected, actual);
+            }
         }
 
         [TestMethod]
@@ -84,19 +86,21 @@ namespace Ycs
         [TestMethod]
         public void TestVarIntEncodingNegativeZero()
         {
-            using var stream = new MemoryStream();
-            stream.WriteVarInt(0, treatZeroAsNegative: true);
-
-            var actual = stream.ToArray();
-
-            // '-0' should have the 7th bit set, i.e. == 64.
-            CollectionAssert.AreEqual(new byte[] { 64 }, actual);
-
-            using (var inputStream = new MemoryStream(actual))
+            using (var stream = new MemoryStream())
             {
-                var v = inputStream.ReadVarInt();
-                Assert.AreEqual(0, v.Value);
-                Assert.AreEqual(-1, v.Sign);
+                stream.WriteVarInt(0, treatZeroAsNegative: true);
+
+                var actual = stream.ToArray();
+
+                // '-0' should have the 7th bit set, i.e. == 64.
+                CollectionAssert.AreEqual(new byte[] { 64 }, actual);
+
+                using (var inputStream = new MemoryStream(actual))
+                {
+                    var v = inputStream.ReadVarInt();
+                    Assert.AreEqual(0, v.Value);
+                    Assert.AreEqual(-1, v.Sign);
+                }
             }
         }
 

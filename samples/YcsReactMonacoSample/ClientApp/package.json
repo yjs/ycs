@@ -17,7 +17,8 @@
     "react-monaco-editor": "0.40.0",
     "@microsoft/signalr": "5.0.0",
     "yjs": "13.4.4",
-    "lib0": "0.2.34"
+    "lib0": "0.2.34",
+    "uuid": "8.3.1"
   },
   "devDependencies": {
     "ajv": "^6.9.1",

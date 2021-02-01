@@ -51,13 +51,15 @@ namespace Ycs
 
         public byte[] ToArray()
         {
-            using var stream = new MemoryStream();
-            stream.WriteVarString(_sb.ToString());
+            using (var stream = new MemoryStream())
+            {
+                stream.WriteVarString(_sb.ToString());
 
-            var (buffer, length) = _lengthEncoder.GetBuffer();
-            stream.Write(buffer, 0, length);
+                var (buffer, length) = _lengthEncoder.GetBuffer();
+                stream.Write(buffer, 0, length);
 
-            return stream.ToArray();
+                return stream.ToArray();
+            }
         }
 
         public (byte[] buffer, int length) GetBuffer()

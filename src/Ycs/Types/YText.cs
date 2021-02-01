@@ -485,7 +485,7 @@ namespace Ycs
                             // If we omit this step, clients will see a different number of paragraphs,
                             // but nothing bad will happen.
                             var insertStr = op.Insert as string;
-                            var ins = (!sanitize && insertStr != null && i == delta.Count - 1 && curPos.Right == null && insertStr.EndsWith('\n')) ? insertStr.Substring(0, insertStr.Length - 1) : op.Insert;
+                            var ins = (!sanitize && insertStr != null && i == delta.Count - 1 && curPos.Right == null && insertStr.EndsWith("\n")) ? insertStr.Substring(0, insertStr.Length - 1) : op.Insert;
                             if (!(ins is string) || ((string)ins).Length > 0)
                             {
                                 // TODO: Null attributes by default to avoid unnecessary allocations?
@@ -661,7 +661,7 @@ namespace Ycs
 
         public void InsertEmbed(int index, object embed, IDictionary<string, object> attributes = null)
         {
-            attributes ??= new Dictionary<string, object>();
+            attributes = attributes ?? new Dictionary<string, object>();
 
             if (Doc != null)
             {
@@ -899,7 +899,7 @@ namespace Ycs
 
         private void InsertText(Transaction transaction, ItemTextListPosition currPos, object text, IDictionary<string, object> attributes)
         {
-            attributes ??= new Dictionary<string, object>();
+            attributes = attributes ?? new Dictionary<string, object>();
 
             foreach (var kvp in currPos.CurrentAttributes)
             {

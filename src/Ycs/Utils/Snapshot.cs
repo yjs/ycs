@@ -30,50 +30,52 @@ namespace Ycs
                 throw new Exception("originDoc must not be garbage collected");
             }
 
-            using var encoder = new UpdateEncoderV2();
-            originDoc.Transact(tr =>
+            using (var encoder = new UpdateEncoderV2())
             {
-                int size = StateVector.Count(kvp => kvp.Value /* clock */ > 0);
-                encoder.RestWriter.WriteVarUint((uint)size);
-
-                // Splitting the structs before writing them to the encoder.
-                foreach (var kvp in StateVector)
+                originDoc.Transact(tr =>
                 {
-                    int client = kvp.Key;
-                    int clock = kvp.Value;
+                    int size = StateVector.Count(kvp => kvp.Value /* clock */ > 0);
+                    encoder.RestWriter.WriteVarUint((uint)size);
 
-                    if (clock == 0)
+                    // Splitting the structs before writing them to the encoder.
+                    foreach (var kvp in StateVector)
                     {
-                        continue;
+                        int client = kvp.Key;
+                        int clock = kvp.Value;
+
+                        if (clock == 0)
+                        {
+                            continue;
+                        }
+
+                        if (clock < originDoc.Store.GetState(client))
+                        {
+                            tr.Doc.Store.GetItemCleanStart(tr, new ID(client, clock));
+                        }
+
+                        var structs = originDoc.Store.Clients[client];
+                        var lastStructIndex = StructStore.FindIndexSS(structs, clock - 1);
+
+                        // Write # encoded structs.
+                        encoder.RestWriter.WriteVarUint((uint)(lastStructIndex + 1));
+                        encoder.WriteClient(client);
+
+                        // First clock written is 0.
+                        encoder.RestWriter.WriteVarUint(0);
+
+                        for (int i = 0; i <= lastStructIndex; i++)
+                        {
+                            structs[i].Write(encoder, 0);
+                        }
                     }
 
-                    if (clock < originDoc.Store.GetState(client))
-                    {
-                        tr.Doc.Store.GetItemCleanStart(tr, new ID(client, clock));
-                    }
+                    DeleteSet.Write(encoder);
+                });
 
-                    var structs = originDoc.Store.Clients[client];
-                    var lastStructIndex = StructStore.FindIndexSS(structs, clock - 1);
-
-                    // Write # encoded structs.
-                    encoder.RestWriter.WriteVarUint((uint)(lastStructIndex + 1));
-                    encoder.WriteClient(client);
-
-                    // First clock written is 0.
-                    encoder.RestWriter.WriteVarUint(0);
-
-                    for (int i = 0; i <= lastStructIndex; i++)
-                    {
-                        structs[i].Write(encoder, 0);
-                    }
-                }
-
-                DeleteSet.Write(encoder);
-            });
-
-            var newDoc = new YDoc(opts ?? originDoc.CloneOptionsWithNewGuid());
-            newDoc.ApplyUpdateV2(encoder.ToArray(), transactionOrigin: "snapshot");
-            return newDoc;
+                var newDoc = new YDoc(opts ?? originDoc.CloneOptionsWithNewGuid());
+                newDoc.ApplyUpdateV2(encoder.ToArray(), transactionOrigin: "snapshot");
+                return newDoc;
+            }
         }
 
         public bool Equals(Snapshot other)
@@ -132,18 +134,22 @@ namespace Ycs
 
         public byte[] EncodeSnapshotV2()
         {
-            using var encoder = new DSEncoderV2();
-            DeleteSet.Write(encoder);
-            EncodingUtils.WriteStateVector(encoder, StateVector);
-            return encoder.ToArray();
+            using (var encoder = new DSEncoderV2())
+            {
+                DeleteSet.Write(encoder);
+                EncodingUtils.WriteStateVector(encoder, StateVector);
+                return encoder.ToArray();
+            }
         }
 
         public static Snapshot DecodeSnapshot(Stream input)
         {
-            using var decoder = new DSDecoderV2(input);
-            var ds = DeleteSet.Read(decoder);
-            var sv = EncodingUtils.ReadStateVector(decoder);
-            return new Snapshot(ds, sv);
+            using (var decoder = new DSDecoderV2(input))
+            {
+                var ds = DeleteSet.Read(decoder);
+                var sv = EncodingUtils.ReadStateVector(decoder);
+                return new Snapshot(ds, sv);
+            }
         }
     }
 }

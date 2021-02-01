@@ -108,25 +108,29 @@ namespace Ycs
 
         public override byte[] ToArray()
         {
-            using var stream = new MemoryStream();
-            // Read the feature flag that might be used in the future.
-            stream.WriteByte(0);
+            using (var stream = new MemoryStream())
+            {
+                // Read the feature flag that might be used in the future.
+                stream.WriteByte(0);
 
-            // TODO: [alekseyk] Maybe pass the writer directly instead of using ToArray()?
-            stream.WriteVarUint8Array(_keyClockEncoder.ToArray());
-            stream.WriteVarUint8Array(_clientEncoder.ToArray());
-            stream.WriteVarUint8Array(_leftClockEncoder.ToArray());
-            stream.WriteVarUint8Array(_rightClockEncoder.ToArray());
-            stream.WriteVarUint8Array(_infoEncoder.ToArray());
-            stream.WriteVarUint8Array(_stringEncoder.ToArray());
-            stream.WriteVarUint8Array(_parentInfoEncoder.ToArray());
-            stream.WriteVarUint8Array(_typeRefEncoder.ToArray());
-            stream.WriteVarUint8Array(_lengthEncoder.ToArray());
+                // TODO: [alekseyk] Maybe pass the writer directly instead of using ToArray()?
+                stream.WriteVarUint8Array(_keyClockEncoder.ToArray());
+                stream.WriteVarUint8Array(_clientEncoder.ToArray());
+                stream.WriteVarUint8Array(_leftClockEncoder.ToArray());
+                stream.WriteVarUint8Array(_rightClockEncoder.ToArray());
+                stream.WriteVarUint8Array(_infoEncoder.ToArray());
+                stream.WriteVarUint8Array(_stringEncoder.ToArray());
+                stream.WriteVarUint8Array(_parentInfoEncoder.ToArray());
+                stream.WriteVarUint8Array(_typeRefEncoder.ToArray());
+                stream.WriteVarUint8Array(_lengthEncoder.ToArray());
 
-            // Append the rest of the data from the RestWriter.
-            // Note it's not the 'WriteVarUint8Array'.
-            stream.Write(base.ToArray());
-            return stream.ToArray();
+                // Append the rest of the data from the RestWriter.
+                // Note it's not the 'WriteVarUint8Array'.
+                var content = base.ToArray();
+                stream.Write(content, 0, content.Length);
+
+                return stream.ToArray();
+            }
         }
 
         public void WriteLeftId(ID id)
