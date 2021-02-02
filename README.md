@@ -5,7 +5,7 @@ A compatible `.Net` implementation of the [Yjs](https://github.com/yjs/yjs) CRDT
 
 With this, you can host CRDTs in your `.Net` application and synchronize them with the existing Yjs models running elsewhere.
 
-#### Latest tested Yjs version: [3.4.12](https://github.com/yjs/yjs/releases/tag/v13.4.12).
+#### Latest tested Yjs version: [3.4.14](https://github.com/yjs/yjs/releases/tag/v13.4.14).
 
 Supports [Y.Array, Y.Map, Y.Text](https://github.com/yjs/yjs#shared-types), but does not yet support `Y.Xml` types.
 

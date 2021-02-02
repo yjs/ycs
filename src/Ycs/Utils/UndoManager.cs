@@ -46,15 +46,18 @@ namespace Ycs
 
         public class StackEventArgs : EventArgs
         {
-            public StackEventArgs(StackItem item, OperationType type, object origin = null)
+            // TODO: [alekseyk] To Read-Only.
+            public StackEventArgs(StackItem item, OperationType type, IDictionary<AbstractType, IList<YEvent>> changedParentTypes, object origin)
             {
                 StackItem = item;
                 Type = type;
+                ChangedParentTypes = changedParentTypes;
                 Origin = origin;
             }
 
             public StackItem StackItem { get; }
             public OperationType Type { get; }
+            public IDictionary<AbstractType, IList<YEvent>> ChangedParentTypes { get; }
             public object Origin { get; }
         }
 
@@ -247,15 +250,20 @@ namespace Ycs
                 return true;
             });
 
-            StackItemAdded?.Invoke(this, new StackEventArgs(stack.Peek(), undoing ? OperationType.Redo : OperationType.Undo, transaction.Origin));
+            StackItemAdded?.Invoke(this, new StackEventArgs(stack.Peek(), undoing ? OperationType.Redo : OperationType.Undo, transaction.ChangedParentTypes, transaction.Origin));
         }
 
         private StackItem PopStackItem(Stack<StackItem> stack, OperationType eventType)
         {
             StackItem result = null;
 
+            // Keep a reference to the transaction so we can fire the event with the 'changedParentTypes'.
+            Transaction tr = null;
+
             _doc.Transact(transaction =>
             {
+                tr = transaction;
+
                 while (stack.Count > 0 && result == null)
                 {
                     var stackItem = stack.Pop();
@@ -383,7 +391,7 @@ namespace Ycs
 
             if (result != null)
             {
-                StackItemPopped?.Invoke(this, new StackEventArgs(result, eventType));
+                StackItemPopped?.Invoke(this, new StackEventArgs(result, eventType, tr.ChangedParentTypes, tr.Origin));
             }
 
             return result;
