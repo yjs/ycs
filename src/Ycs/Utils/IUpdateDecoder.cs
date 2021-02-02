@@ -22,7 +22,7 @@ namespace Ycs
     {
         ID ReadLeftId();
         ID ReadRightId();
-        int ReadClient();
+        long ReadClient();
         byte ReadInfo();
         string ReadString();
         bool ReadParentInfo();

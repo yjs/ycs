@@ -12,14 +12,14 @@ namespace Ycs
 {
     public class StackItem
     {
-        public IDictionary<int, int> BeforeState;
-        public IDictionary<int, int> AfterState;
+        public IDictionary<long, int> BeforeState;
+        public IDictionary<long, int> AfterState;
         // Use this to save and restore metadata like selection range.
         public IDictionary<string, object> Meta;
 
         internal DeleteSet DeleteSet;
 
-        internal StackItem(DeleteSet ds, IDictionary<int, int> beforeState, IDictionary<int, int> afterState)
+        internal StackItem(DeleteSet ds, IDictionary<long, int> beforeState, IDictionary<long, int> afterState)
         {
             DeleteSet = ds;
             BeforeState = beforeState;

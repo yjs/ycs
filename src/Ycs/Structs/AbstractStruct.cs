@@ -26,7 +26,7 @@ namespace Ycs
         internal abstract bool MergeWith(AbstractStruct right);
         internal abstract void Delete(Transaction transaction);
         internal abstract void Integrate(Transaction transaction, int offset);
-        internal abstract int? GetMissing(Transaction transaction, StructStore store);
+        internal abstract long? GetMissing(Transaction transaction, StructStore store);
         internal abstract void Write(IUpdateEncoder encoder, int offset);
     }
 }

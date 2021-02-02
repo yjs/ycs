@@ -43,7 +43,7 @@ namespace Ycs
             transaction.Doc.Store.AddStruct(this);
         }
 
-        internal override int? GetMissing(Transaction transaction, StructStore store)
+        internal override long? GetMissing(Transaction transaction, StructStore store)
         {
             return null;
         }

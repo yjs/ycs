@@ -33,7 +33,7 @@ namespace Ycs
         /// <summary>
         /// NOTE: Use 'writeClient' and 'writeClock' instead of writeID if possible.
         /// </summary>
-        void WriteClient(int client);
+        void WriteClient(long client);
 
         void WriteInfo(byte info);
         void WriteString(string s);

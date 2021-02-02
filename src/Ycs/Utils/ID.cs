@@ -15,14 +15,14 @@ namespace Ycs
         /// <summary>
         /// Client id.
         /// </summary>
-        public int Client;
+        public long Client;
 
         /// <summary>
         /// Unique per client id, continuous number.
         /// </summary>
         public int Clock;
 
-        public ID(int client, int clock)
+        public ID(long client, int clock)
         {
             Debug.Assert(client >= 0, "Client should not be negative, as it causes client encoder to fail");
             Debug.Assert(clock >= 0);
@@ -49,7 +49,7 @@ namespace Ycs
 
         public static ID Read(Stream reader)
         {
-            var client = (int)reader.ReadVarUint();
+            var client = (long)reader.ReadVarUint();
             var clock = (int)reader.ReadVarUint();
             Debug.Assert(client >= 0 && clock >= 0);
             return new ID(client, clock);

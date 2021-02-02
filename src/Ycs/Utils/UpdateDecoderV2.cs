@@ -114,22 +114,22 @@ namespace Ycs
         public ID ReadLeftId()
         {
             CheckDisposed();
-            return new ID((int)_clientDecoder.Read(), _leftClockDecoder.Read());
+            return new ID(_clientDecoder.Read(), _leftClockDecoder.Read());
         }
 
         public ID ReadRightId()
         {
             CheckDisposed();
-            return new ID((int)_clientDecoder.Read(), _rightClockDecoder.Read());
+            return new ID(_clientDecoder.Read(), _rightClockDecoder.Read());
         }
 
         /// <summary>
         /// Read the next client Id.
         /// </summary>
-        public int ReadClient()
+        public long ReadClient()
         {
             CheckDisposed();
-            return (int)_clientDecoder.Read();
+            return _clientDecoder.Read();
         }
 
         public byte ReadInfo()

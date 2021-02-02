@@ -21,12 +21,12 @@ namespace Ycs
         }
 
         // TODO: [alekseyk] To private?
-        public readonly IDictionary<int, List<AbstractStruct>> Clients = new Dictionary<int, List<AbstractStruct>>();
+        public readonly IDictionary<long, List<AbstractStruct>> Clients = new Dictionary<long, List<AbstractStruct>>();
 
         /// <summary>
         /// Store incompleted struct reads here.
         /// </summary>
-        private readonly IDictionary<int, PendingClientStructRef> _pendingClientStructRefs = new Dictionary<int, PendingClientStructRef>();
+        private readonly IDictionary<long, PendingClientStructRef> _pendingClientStructRefs = new Dictionary<long, PendingClientStructRef>();
 
         /// <summary>
         /// Stack of pending structs waiting for struct dependencies.
@@ -39,9 +39,9 @@ namespace Ycs
         /// Return the states as a Map<int,int>.
         /// Note that clock refers to the next expected clock id.
         /// </summary>
-        public IDictionary<int, int> GetStateVector()
+        public IDictionary<long, int> GetStateVector()
         {
-            var result = new Dictionary<int, int>(Clients.Count);
+            var result = new Dictionary<long, int>(Clients.Count);
 
             foreach (var kvp in Clients)
             {
@@ -52,7 +52,7 @@ namespace Ycs
             return result;
         }
 
-        public int GetState(int clientId)
+        public int GetState(long clientId)
         {
             if (Clients.TryGetValue(clientId, out var structs))
             {
@@ -94,7 +94,7 @@ namespace Ycs
         {
 #if NETSTANDARD2_0
             // NOTE: We cannot delete items from the Dictionary while iterating over it in netstandard2.0.
-            var clientsToRemove = new List<int>();
+            var clientsToRemove = new List<long>();
 #endif // NETSTANDARD2_0
 
             // Cleanup pendingCLientsStructs if not fully finished.
@@ -407,7 +407,7 @@ namespace Ycs
             }
         }
 
-        internal void MergeReadStructsIntoPendingReads(IDictionary<int, List<AbstractStruct>> clientStructsRefs)
+        internal void MergeReadStructsIntoPendingReads(IDictionary<long, List<AbstractStruct>> clientStructsRefs)
         {
             var pendingClientStructRefs = _pendingClientStructRefs;
             foreach (var kvp in clientStructsRefs)
@@ -502,7 +502,7 @@ namespace Ycs
 
             var stackHead = stack.Count > 0 ? stack.Pop() : curStructsTarget.Refs[curStructsTarget.NextReadOperation++];
             // Caching the state because it is used very often.
-            var state = new Dictionary<int, int>();
+            var state = new Dictionary<long, int>();
 
             // Iterate over all struct readers until we are done.
             while (true)

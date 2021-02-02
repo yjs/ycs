@@ -35,7 +35,7 @@ namespace Ycs
 
         public DeleteSet()
         {
-            Clients = new Dictionary<int, List<DeleteItem>>();
+            Clients = new Dictionary<long, List<DeleteItem>>();
         }
 
         public DeleteSet(IList<DeleteSet> dss)
@@ -50,9 +50,9 @@ namespace Ycs
             CreateDeleteSetFromStructStore(ss);
         }
 
-        public IDictionary<int, List<DeleteItem>> Clients { get; }
+        public IDictionary<long, List<DeleteItem>> Clients { get; }
 
-        public void Add(int client, int clock, int length)
+        public void Add(long client, int clock, int length)
         {
             if (!Clients.TryGetValue(client, out var deletes))
             {

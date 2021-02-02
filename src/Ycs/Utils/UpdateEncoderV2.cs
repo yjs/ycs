@@ -145,7 +145,7 @@ namespace Ycs
             _rightClockEncoder.Write(id.Clock);
         }
 
-        public void WriteClient(int client)
+        public void WriteClient(long client)
         {
             _clientEncoder.Write((uint)client);
         }

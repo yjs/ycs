@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using YcsSample.Hubs;
+using YcsSample.Middleware;
 
 namespace YcsSample
 {
@@ -48,6 +48,9 @@ namespace YcsSample
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            // Allows YcsManager to broadcast YDocument changes made by the current process.
+            app.UseYcsHubAccessor();
 
             app.UseRouting();
 

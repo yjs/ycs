@@ -27,7 +27,7 @@ namespace Ycs
             Doc = doc;
             DeleteSet = new DeleteSet();
             BeforeState = Doc.Store.GetStateVector();
-            AfterState = new Dictionary<int, int>();
+            AfterState = new Dictionary<long, int>();
             Changed = new Dictionary<AbstractType, ISet<string>>();
             ChangedParentTypes = new Dictionary<AbstractType, IList<YEvent>>();
             _mergeStructs = new List<AbstractStruct>();
@@ -49,12 +49,12 @@ namespace Ycs
         /// <summary>
         /// Holds the state before the transaction started.
         /// </summary>
-        public IDictionary<int, int> BeforeState { get; }
+        public IDictionary<long, int> BeforeState { get; }
 
         /// <summary>
         /// Holds the state after the transaction.
         /// </summary>
-        public IDictionary<int, int> AfterState { get; private set; }
+        public IDictionary<long, int> AfterState { get; private set; }
 
         /// <summary>
         /// All types that were directly modified (property added or child

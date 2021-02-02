@@ -410,7 +410,7 @@ namespace Ycs
         /// <summary>
         /// Returns the creator ClientID of the missing OP or define missing items and return null.
         /// </summary>
-        internal override int? GetMissing(Transaction transaction, StructStore store)
+        internal override long? GetMissing(Transaction transaction, StructStore store)
         {
             if (LeftOrigin != null && LeftOrigin.Value.Client != Id.Client && LeftOrigin.Value.Clock >= store.GetState(LeftOrigin.Value.Client))
             {
@@ -571,7 +571,7 @@ namespace Ycs
         /// </summary>
         public Item SplitItem(Transaction transaction, int diff)
         {
-            int client = Id.Client;
+            long client = Id.Client;
             int clock = Id.Clock;
 
             var rightItem = new Item(
