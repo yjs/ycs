@@ -14,8 +14,8 @@ namespace Ycs
         Stream Reader { get; }
 
         void ResetDsCurVal();
-        int ReadDsClock();
-        int ReadDsLength();
+        long ReadDsClock();
+        long ReadDsLength();
     }
 
     internal interface IUpdateDecoder : IDSDecoder

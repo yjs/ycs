@@ -9,11 +9,11 @@ using System.IO;
 namespace Ycs
 {
     /// <seealso cref="IntDiffOptRleEncoder"/>
-    internal class IntDiffOptRleDecoder : AbstractStreamDecoder<int>
+    internal class IntDiffOptRleDecoder : AbstractStreamDecoder<long>
     {
-        private int _state;
+        private long _state;
         private uint _count;
-        private int _diff;
+        private long _diff;
 
         public IntDiffOptRleDecoder(Stream input, bool leaveOpen = false)
             : base(input, leaveOpen)
@@ -22,13 +22,13 @@ namespace Ycs
         }
 
         /// <inheritdoc/>
-        public override int Read()
+        public override long Read()
         {
             CheckDisposed();
 
             if (_count == 0)
             {
-                int diff = Stream.ReadVarInt().Value;
+                var diff = Stream.ReadVarInt().Value;
 
                 // If the first bit is set, we read more data.
                 bool hasCount = (diff & Bit.Bit1) > 0;

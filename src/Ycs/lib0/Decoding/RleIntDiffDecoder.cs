@@ -10,19 +10,19 @@ using System.IO;
 namespace Ycs
 {
     /// <seealso cref="RleIntDiffEncoder"/>
-    internal class RleIntDiffDecoder : AbstractStreamDecoder<int>
+    internal class RleIntDiffDecoder : AbstractStreamDecoder<long>
     {
-        private int _state;
-        private int _count;
+        private long _state;
+        private long _count;
 
-        public RleIntDiffDecoder(Stream input, int start, bool leaveOpen = false)
+        public RleIntDiffDecoder(Stream input, long start, bool leaveOpen = false)
             : base(input, leaveOpen)
         {
             _state = start;
         }
 
         /// <inheritdoc/>
-        public override int Read()
+        public override long Read()
         {
             CheckDisposed();
 
@@ -33,7 +33,7 @@ namespace Ycs
                 if (HasContent)
                 {
                     // See encoder implementation for the reason why this is incremented.
-                    _count = (int)Stream.ReadVarUint() + 1;
+                    _count = Stream.ReadVarUint() + 1;
                     Debug.Assert(_count > 0);
                 }
                 else

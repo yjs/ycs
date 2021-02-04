@@ -14,7 +14,7 @@ namespace Ycs
     internal class DSDecoderV2 : IDSDecoder
     {
         private readonly bool _leaveOpen;
-        private int _dsCurVal;
+        private long _dsCurVal;
 
         public DSDecoderV2(Stream input, bool leaveOpen = false)
         {
@@ -36,16 +36,16 @@ namespace Ycs
             _dsCurVal = 0;
         }
 
-        public int ReadDsClock()
+        public long ReadDsClock()
         {
-            _dsCurVal += (int)Reader.ReadVarUint();
+            _dsCurVal += Reader.ReadVarUint();
             Debug.Assert(_dsCurVal >= 0);
             return _dsCurVal;
         }
 
-        public int ReadDsLength()
+        public long ReadDsLength()
         {
-            int diff = (int)Reader.ReadVarUint() + 1;
+            var diff = Reader.ReadVarUint() + 1;
             Debug.Assert(diff >= 0);
             _dsCurVal += diff;
             return diff;
@@ -182,7 +182,7 @@ namespace Ycs
         {
             CheckDisposed();
 
-            var keyClock = _keyClockDecoder.Read();
+            var keyClock = (int)_keyClockDecoder.Read();
             if (keyClock < _keys.Count)
             {
                 return _keys[keyClock];

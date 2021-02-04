@@ -486,9 +486,10 @@ namespace Ycs
         [DataRow(5, 600)]
         [DataRow(5, 1_000)]
         [DataRow(5, 1_800)]
-        /*
         [DataRow(5, 3_000)]
+        /*
         [DataRow(5, 5_000)]
+        [DataRow(5, 10_000)]
         [DataRow(5, 15_000)]
         */
         public void TestRepeatGeneratingYArrayTests(int users, int iterations)

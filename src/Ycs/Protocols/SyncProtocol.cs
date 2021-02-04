@@ -11,9 +11,9 @@ namespace Ycs
 {
     internal static class SyncProtocol
     {
-        public const int MessageYjsSyncStep1 = 0;
-        public const int MessageYjsSyncStep2 = 1;
-        public const int MessageYjsUpdate = 2;
+        public const uint MessageYjsSyncStep1 = 0;
+        public const uint MessageYjsSyncStep2 = 1;
+        public const uint MessageYjsUpdate = 2;
 
         public static void WriteSyncStep1(Stream stream, YDoc doc)
         {
@@ -52,9 +52,9 @@ namespace Ycs
             ReadSyncStep2(stream, doc, transactionOrigin);
         }
 
-        public static int ReadSyncMessage(Stream reader, Stream writer, YDoc doc, object transactionOrigin)
+        public static uint ReadSyncMessage(Stream reader, Stream writer, YDoc doc, object transactionOrigin)
         {
-            var messageType = (int)reader.ReadVarUint();
+            var messageType = reader.ReadVarUint();
 
             switch (messageType)
             {

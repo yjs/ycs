@@ -68,12 +68,12 @@ namespace Ycs
         [TestMethod]
         public void TestVarIntEncoding()
         {
-            DoTestEncoding<int>("VarInt 1 byte", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -42);
-            DoTestEncoding<int>("VarInt 2 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 9 | 3));
-            DoTestEncoding<int>("VarInt 3 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 17 | 1 << 9 | 3));
-            DoTestEncoding<int>("VarInt 4 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 25 | 1 << 17 | 1 << 9 | 3));
-            DoTestEncoding<int>("VarInt of -691529286", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -691_529_286);
-            DoTestEncoding<int>("VarInt of 64 (-0)", (w, v) => w.WriteVarInt(v, treatZeroAsNegative: true), (r) => r.ReadVarInt().Value, 0);
+            DoTestEncoding<long>("VarInt 1 byte", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -42);
+            DoTestEncoding<long>("VarInt 2 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 9 | 3));
+            DoTestEncoding<long>("VarInt 3 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 17 | 1 << 9 | 3));
+            DoTestEncoding<long>("VarInt 4 bytes", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -(1 << 25 | 1 << 17 | 1 << 9 | 3));
+            DoTestEncoding<long>("VarInt of -691529286", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, -691_529_286);
+            DoTestEncoding<long>("VarInt of 64 (-0)", (w, v) => w.WriteVarInt(v, treatZeroAsNegative: true), (r) => r.ReadVarInt().Value, 0);
         }
 
         [TestMethod]
@@ -122,7 +122,7 @@ namespace Ycs
             for (int i = 0; i < 10; i++)
             {
                 var n = rand.Next(0, int.MaxValue);
-                DoTestEncoding<int>($"VarInt of {n}", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, n);
+                DoTestEncoding<long>($"VarInt of {n}", (w, v) => w.WriteVarInt(v), (r) => r.ReadVarInt().Value, n);
             }
         }
 

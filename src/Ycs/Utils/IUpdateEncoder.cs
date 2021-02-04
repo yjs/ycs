@@ -21,8 +21,8 @@ namespace Ycs
         /// </summary>
         void ResetDsCurVal();
 
-        void WriteDsClock(int clock);
-        void WriteDsLength(int length);
+        void WriteDsClock(long clock);
+        void WriteDsLength(long length);
     }
 
     internal interface IUpdateEncoder : IDSEncoder

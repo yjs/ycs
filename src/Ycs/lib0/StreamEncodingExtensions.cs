@@ -68,7 +68,7 @@ namespace Ycs
         /// We use the 7-th bit instead for signalling that this is a negative number.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteVarInt(this Stream stream, int num, bool? treatZeroAsNegative = null)
+        public static void WriteVarInt(this Stream stream, long num, bool? treatZeroAsNegative = null)
         {
             bool isNegative = num == 0 ? (treatZeroAsNegative ?? false) : num < 0;
             if (isNegative)
@@ -203,6 +203,10 @@ namespace Ycs
                 case int i: // TYPE 125: INTEGER
                     stream.WriteByte(125);
                     stream.WriteVarInt(i);
+                    break;
+                case long l: // Special case: treat LONG as INTEGER.
+                    stream.WriteByte(125);
+                    stream.WriteVarInt(l);
                     break;
                 case null: // TYPE 126: null
                            // TYPE 127: undefined

@@ -66,7 +66,7 @@ namespace Ycs
 
         internal bool Adds(AbstractStruct str)
         {
-            return !Transaction.BeforeState.TryGetValue(str.Id.Client, out int clock) || str.Id.Clock >= clock;
+            return !Transaction.BeforeState.TryGetValue(str.Id.Client, out var clock) || str.Id.Clock >= clock;
         }
 
         private ChangesCollection CollectChanges()

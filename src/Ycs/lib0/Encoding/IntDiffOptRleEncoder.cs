@@ -27,10 +27,10 @@ namespace Ycs
     /// Use this encoder only when appropriate. In most cases, this is probably a bad idea.
     /// </summary>
     /// <seealso cref="IntDiffOptRleDecoder"/>
-    internal class IntDiffOptRleEncoder : AbstractStreamEncoder<int>
+    internal class IntDiffOptRleEncoder : AbstractStreamEncoder<long>
     {
-        private int _state = 0;
-        private int _diff = 0;
+        private long _state = 0;
+        private long _diff = 0;
         private uint _count = 0;
 
         public IntDiffOptRleEncoder()
@@ -39,7 +39,7 @@ namespace Ycs
         }
 
         /// <inheritdoc/>
-        public override void Write(int value)
+        public override void Write(long value)
         {
             Debug.Assert(value <= Bits.Bits30);
             CheckDisposed();
@@ -69,15 +69,15 @@ namespace Ycs
         {
             if (_count > 0)
             {
-                int encodedDiff;
+                long encodedDiff;
                 if (_diff < 0)
                 {
-                    encodedDiff = -(((-_diff) << 1) | (_count == 1 ? 0 : 1));
+                    encodedDiff = -(((uint)(-_diff) << 1) | (uint)(_count == 1 ? 0 : 1));
                 }
                 else
                 {
                     // 31bit making up a diff  | whether to write the counter.
-                    encodedDiff = (_diff << 1) | (_count == 1 ? 0 : 1);
+                    encodedDiff = ((uint)_diff << 1) | (uint)(_count == 1 ? 0 : 1);
                 }
 
                 Stream.WriteVarInt(encodedDiff);

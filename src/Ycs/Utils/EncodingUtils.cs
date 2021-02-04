@@ -72,7 +72,7 @@ namespace Ycs
 
         /// <param name="structs">All structs by 'client'.</param>
         /// <param name="clock">Write structs starting with 'ID(client,clock)'.</param>
-        public static void WriteStructs(IUpdateEncoder encoder, IList<AbstractStruct> structs, long client, int clock)
+        public static void WriteStructs(IUpdateEncoder encoder, IList<AbstractStruct> structs, long client, long clock)
         {
             // Write first id.
             int startNewStructs = StructStore.FindIndexSS(structs, clock);
@@ -84,7 +84,7 @@ namespace Ycs
 
             // Write first struct with offset.
             var firstStruct = structs[startNewStructs];
-            firstStruct.Write(encoder, clock - firstStruct.Id.Clock);
+            firstStruct.Write(encoder, (int)(clock - firstStruct.Id.Clock));
 
             for (int i = startNewStructs + 1; i < structs.Count; i++)
             {
@@ -92,10 +92,10 @@ namespace Ycs
             }
         }
 
-        public static void WriteClientsStructs(IUpdateEncoder encoder, StructStore store, IDictionary<long, int> _sm)
+        public static void WriteClientsStructs(IUpdateEncoder encoder, StructStore store, IDictionary<long, long> _sm)
         {
             // We filter all valid _sm entries into sm.
-            var sm = new Dictionary<long, int>();
+            var sm = new Dictionary<long, long>();
             foreach (var kvp in _sm)
             {
                 var client = kvp.Key;
@@ -123,7 +123,7 @@ namespace Ycs
             // Write items with higher client ids first.
             // This heavily improves the conflict resolution algorithm.
             var sortedClients = sm.Keys.ToList();
-            sortedClients.Sort((a, b) => (int)(b - a));
+            sortedClients.Sort((a, b) => b.CompareTo(a));
 
             foreach (var client in sortedClients)
             {
@@ -134,20 +134,20 @@ namespace Ycs
         public static IDictionary<long, List<AbstractStruct>> ReadClientStructRefs(IUpdateDecoder decoder, YDoc doc)
         {
             var clientRefs = new Dictionary<long, List<AbstractStruct>>();
-
             var numOfStateUpdates = decoder.Reader.ReadVarUint();
-            for (int i = 0; i < numOfStateUpdates; i++)
+
+            for (var i = 0; i < numOfStateUpdates; i++)
             {
                 var numberOfStructs = (int)decoder.Reader.ReadVarUint();
                 Debug.Assert(numberOfStructs >= 0);
 
                 var refs = new List<AbstractStruct>(numberOfStructs);
-                var client = decoder.ReadClient();
-                var clock = (int)decoder.Reader.ReadVarUint();
+                long client = decoder.ReadClient();
+                long clock = decoder.Reader.ReadVarUint();
 
                 clientRefs[client] = refs;
 
-                for (int j = 0; j < numberOfStructs; j++)
+                for (var j = 0; j < numberOfStructs; j++)
                 {
                     var info = decoder.ReadInfo();
                     if ((Bits.Bits5 & info) != 0)
@@ -190,7 +190,7 @@ namespace Ycs
             return clientRefs;
         }
 
-        public static void WriteStateVector(IDSEncoder encoder, IDictionary<long, int> sv)
+        public static void WriteStateVector(IDSEncoder encoder, IDictionary<long, long> sv)
         {
             encoder.RestWriter.WriteVarUint((uint)sv.Count);
 
@@ -204,22 +204,22 @@ namespace Ycs
             }
         }
 
-        public static IDictionary<long, int> ReadStateVector(IDSDecoder decoder)
+        public static IDictionary<long, long> ReadStateVector(IDSDecoder decoder)
         {
             var ssLength = (int)decoder.Reader.ReadVarUint();
-            var ss = new Dictionary<long, int>(ssLength);
+            var ss = new Dictionary<long, long>(ssLength);
 
-            for (int i = 0; i < ssLength; i++)
+            for (var i = 0; i < ssLength; i++)
             {
-                var client = (long)decoder.Reader.ReadVarUint();
-                var clock = (int)decoder.Reader.ReadVarUint();
+                var client = decoder.Reader.ReadVarUint();
+                var clock = decoder.Reader.ReadVarUint();
                 ss[client] = clock;
             }
 
             return ss;
         }
 
-        public static IDictionary<long, int> DecodeStateVector(Stream input)
+        public static IDictionary<long, long> DecodeStateVector(Stream input)
         {
             return ReadStateVector(new DSDecoderV2(input));
         }

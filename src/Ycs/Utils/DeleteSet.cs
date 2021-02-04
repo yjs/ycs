@@ -23,10 +23,10 @@ namespace Ycs
     {
         public struct DeleteItem
         {
-            public readonly int Clock;
-            public readonly int Length;
+            public readonly long Clock;
+            public readonly long Length;
 
-            public DeleteItem(int clock, int length)
+            public DeleteItem(long clock, long length)
             {
                 Clock = clock;
                 Length = length;
@@ -52,7 +52,7 @@ namespace Ycs
 
         public IDictionary<long, List<DeleteItem>> Clients { get; }
 
-        public void Add(long client, int clock, int length)
+        public void Add(long client, long clock, long length)
         {
             if (!Clients.TryGetValue(client, out var deletes))
             {
@@ -78,16 +78,16 @@ namespace Ycs
             }
         }
 
-        public int? FindIndexSS(IList<DeleteItem> dis, int clock)
+        public int? FindIndexSS(IList<DeleteItem> dis, long clock)
         {
-            int left = 0;
-            int right = dis.Count - 1;
+            var left = 0;
+            var right = dis.Count - 1;
 
             while (left <= right)
             {
-                int midIndex = (left + right) / 2;
+                var midIndex = (left + right) / 2;
                 var mid = dis[midIndex];
-                int midClock = mid.Clock;
+                var midClock = mid.Clock;
 
                 if (midClock <= clock)
                 {
@@ -117,7 +117,7 @@ namespace Ycs
         {
             foreach (var dels in Clients.Values)
             {
-                dels.Sort((a, b) => a.Clock - b.Clock);
+                dels.Sort((a, b) => a.Clock.CompareTo(b.Clock));
 
                 // Merge items without filtering or splicing the array.
                 // i is the current pointer.
@@ -278,8 +278,8 @@ namespace Ycs
                     var str = structs[i];
                     if (str.Deleted)
                     {
-                        int clock = str.Id.Clock;
-                        int len = str.Length;
+                        var clock = str.Id.Clock;
+                        var len = str.Length;
 
                         while (i + 1 < structs.Count)
                         {
@@ -333,25 +333,25 @@ namespace Ycs
         {
             var ds = new DeleteSet();
 
-            var numClients = (int)decoder.Reader.ReadVarUint();
+            var numClients = decoder.Reader.ReadVarUint();
             Debug.Assert(numClients >= 0);
 
-            for (int i = 0; i < numClients; i++)
+            for (var i = 0; i < numClients; i++)
             {
                 decoder.ResetDsCurVal();
 
-                var client = (int)decoder.Reader.ReadVarUint();
-                var numberOfDeletes = (int)decoder.Reader.ReadVarUint();
+                var client = decoder.Reader.ReadVarUint();
+                var numberOfDeletes = decoder.Reader.ReadVarUint();
 
                 if (numberOfDeletes > 0)
                 {
                     if (!ds.Clients.TryGetValue(client, out var dsField))
                     {
-                        dsField = new List<DeleteItem>(numberOfDeletes);
+                        dsField = new List<DeleteItem>((int)numberOfDeletes);
                         ds.Clients[client] = dsField;
                     }
 
-                    for (int j = 0; j < numberOfDeletes; j++)
+                    for (var j = 0; j < numberOfDeletes; j++)
                     {
                         var deleteItem = new DeleteItem(decoder.ReadDsClock(), decoder.ReadDsLength());
                         dsField.Add(deleteItem);

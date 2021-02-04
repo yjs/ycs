@@ -330,7 +330,7 @@ namespace Ycs
             using (var encoder = new UpdateEncoderV2())
             {
                 var targetStateVector = encodedTargetStateVector == null
-                    ? new Dictionary<long, int>()
+                    ? new Dictionary<long, long>()
                     : EncodingUtils.DecodeStateVector(new MemoryStream(encodedTargetStateVector, writable: false));
                 WriteStateAsUpdate(encoder, targetStateVector);
                 return encoder.ToArray();
@@ -350,7 +350,7 @@ namespace Ycs
         /// Write all the document as a single update message. If you specify the satte of the remote client, it will only
         /// write the operations that are missing.
         /// </summary>
-        internal void WriteStateAsUpdate(IUpdateEncoder encoder, IDictionary<long, int> targetStateVector)
+        internal void WriteStateAsUpdate(IUpdateEncoder encoder, IDictionary<long, long> targetStateVector)
         {
             EncodingUtils.WriteClientsStructs(encoder, Store, targetStateVector);
             new DeleteSet(Store).Write(encoder);

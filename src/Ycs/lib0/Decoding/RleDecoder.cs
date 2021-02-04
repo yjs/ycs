@@ -13,7 +13,7 @@ namespace Ycs
     internal class RleDecoder : AbstractStreamDecoder<byte>
     {
         private byte _state;
-        private int _count;
+        private long _count;
 
         public RleDecoder(Stream input, bool leaveOpen = false)
             : base(input, leaveOpen)
@@ -33,7 +33,7 @@ namespace Ycs
                 if (HasContent)
                 {
                     // See encoder implementation for the reason why this is incremented.
-                    _count = (int)Stream.ReadVarUint() + 1;
+                    _count = Stream.ReadVarUint() + 1;
                     Debug.Assert(_count > 0);
                 }
                 else

@@ -76,7 +76,7 @@ namespace Ycs
         /// </summary>
         /// <exception cref="InvalidDataException">Invalid binary format.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static (int Value, int Sign) ReadVarInt(this Stream stream)
+        public static (long Value, int Sign) ReadVarInt(this Stream stream)
         {
             byte r = stream._ReadByte();
             uint num = r & Bits.Bits6;
@@ -86,7 +86,7 @@ namespace Ycs
             if ((r & Bit.Bit8) == 0)
             {
                 // Don't continue reading.
-                return (sign * (int)num, sign);
+                return (sign * num, sign);
             }
 
             while (true)
@@ -97,7 +97,7 @@ namespace Ycs
 
                 if (r < Bit.Bit8)
                 {
-                    return (sign * (int)num, sign);
+                    return (sign * num, sign);
                 }
 
                 if (len > 41)
@@ -207,7 +207,7 @@ namespace Ycs
                     return BitConverter.ToSingle(fBytes);
 #endif // NETSTANDARD2_0
                 case 125: // integer
-                    return stream.ReadVarInt().Value;
+                    return (int)stream.ReadVarInt().Value;
                 case 126: // null
                 case 127: // undefined
                     return null;

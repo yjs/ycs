@@ -13,7 +13,7 @@ namespace Ycs
 {
     internal class DSEncoderV2 : IDSEncoder
     {
-        private int _dsCurVal;
+        private long _dsCurVal;
 
         public DSEncoderV2()
         {
@@ -35,15 +35,15 @@ namespace Ycs
             _dsCurVal = 0;
         }
 
-        public void WriteDsClock(int clock)
+        public void WriteDsClock(long clock)
         {
-            int diff = clock - _dsCurVal;
+            var diff = clock - _dsCurVal;
             Debug.Assert(diff >= 0);
             _dsCurVal = clock;
             RestWriter.WriteVarUint((uint)diff);
         }
 
-        public void WriteDsLength(int length)
+        public void WriteDsLength(long length)
         {
             if (length <= 0)
             {

@@ -37,7 +37,7 @@ namespace Ycs
         {
             CheckDisposed();
 
-            int length = (int)_lengthDecoder.Read();
+            var length = (int)_lengthDecoder.Read();
             if (length == 0)
             {
                 return string.Empty;

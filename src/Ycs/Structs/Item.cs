@@ -571,8 +571,8 @@ namespace Ycs
         /// </summary>
         public Item SplitItem(Transaction transaction, int diff)
         {
-            long client = Id.Client;
-            int clock = Id.Clock;
+            var client = Id.Client;
+            var clock = Id.Clock;
 
             var rightItem = new Item(
                 new ID(client, clock + diff),

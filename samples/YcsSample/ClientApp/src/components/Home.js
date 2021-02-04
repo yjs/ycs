@@ -31,8 +31,6 @@ const createMonacoSelectionFromRelativeSelection = (editor, type, relSel, doc) =
 }
 
 export class Home extends Component {
-  maxClientId = 1000000000;
-
   _ydoc = null;
   _ytext = null;
   _monacoEditor = null;
@@ -47,9 +45,6 @@ export class Home extends Component {
 
     this._mux = createMutex();
     this._ydoc = new Y.Doc();
-
-    // We need to limit the ID to max int for uint decoder to work.
-    this._ydoc.clientID = Math.floor(Math.random() * Math.floor(this.maxClientId));
     this._ytext = this._ydoc.getText("monaco");
 
     this._ydoc.on('beforeAllTransactions', () => this._onDocBeforeTransactions());

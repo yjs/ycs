@@ -56,9 +56,9 @@ namespace Ycs
         /*
         public RelativePosition(dynamic json)
         {
-            TypeId = json.type == null ? (ID?)null : new ID((int)json.type.client, (int)json.type.clock);
+            TypeId = json.type == null ? (ID?)null : new ID((long)json.type.client, (long)json.type.clock);
             TName = json.tname ?? null;
-            Item = json.item == null ? (ID?)null : new ID((int)json.item.client, (int)json.item.clock);
+            Item = json.item == null ? (ID?)null : new ID((long)json.item.client, (long)json.item.clock);
         }
         */
 
@@ -186,7 +186,7 @@ namespace Ycs
                     throw new Exception();
             }
 
-            int assoc = reader.Position < reader.Length ? reader.ReadVarInt().Value : 0;
+            var assoc = reader.Position < reader.Length ? (int)reader.ReadVarInt().Value : 0;
             return new RelativePosition(typeId, tName, itemId, assoc);
         }
 

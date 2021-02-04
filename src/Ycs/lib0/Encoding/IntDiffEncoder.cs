@@ -11,17 +11,17 @@ namespace Ycs
     /// Encodes the values <c>[3, 1100, 1101, 1050, 0]</c> to <c>[3, 1097, 1, -51, -1050]</c>.
     /// </summary>
     /// <seealso cref="IntDiffDecoder"/>
-    internal class IntDiffEncoder : AbstractStreamEncoder<int>
+    internal class IntDiffEncoder : AbstractStreamEncoder<long>
     {
-        private int _state;
+        private long _state;
 
-        public IntDiffEncoder(int start)
+        public IntDiffEncoder(long start)
         {
             _state = start;
         }
 
         /// <inheritdoc/>
-        public override void Write(int value)
+        public override void Write(long value)
         {
             CheckDisposed();
 

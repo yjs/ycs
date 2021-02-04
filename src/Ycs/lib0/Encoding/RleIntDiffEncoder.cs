@@ -15,18 +15,18 @@ namespace Ycs
     /// Encodes values <c>[1, 1, 1, 2, 3, 4, 5, 6]</c> as <c>[1, 1, 0, 2, 1, 5]</c>.
     /// </summary>
     /// <seealso cref="RleIntDiffDecoder"/>
-    internal sealed class RleIntDiffEncoder : AbstractStreamEncoder<int>
+    internal sealed class RleIntDiffEncoder : AbstractStreamEncoder<long>
     {
-        private int _state;
+        private long _state;
         private uint _count;
 
-        public RleIntDiffEncoder(int start)
+        public RleIntDiffEncoder(long start)
         {
             _state = start;
         }
 
         /// <inheritdoc/>
-        public override void Write(int value)
+        public override void Write(long value)
         {
             CheckDisposed();
 

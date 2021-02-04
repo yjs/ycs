@@ -27,7 +27,7 @@ namespace Ycs
             Doc = doc;
             DeleteSet = new DeleteSet();
             BeforeState = Doc.Store.GetStateVector();
-            AfterState = new Dictionary<long, int>();
+            AfterState = new Dictionary<long, long>();
             Changed = new Dictionary<AbstractType, ISet<string>>();
             ChangedParentTypes = new Dictionary<AbstractType, IList<YEvent>>();
             _mergeStructs = new List<AbstractStruct>();
@@ -49,12 +49,12 @@ namespace Ycs
         /// <summary>
         /// Holds the state before the transaction started.
         /// </summary>
-        public IDictionary<long, int> BeforeState { get; }
+        public IDictionary<long, long> BeforeState { get; }
 
         /// <summary>
         /// Holds the state after the transaction.
         /// </summary>
-        public IDictionary<long, int> AfterState { get; private set; }
+        public IDictionary<long, long> AfterState { get; private set; }
 
         /// <summary>
         /// All types that were directly modified (property added or child
@@ -102,7 +102,7 @@ namespace Ycs
         internal void AddChangedTypeToTransaction(AbstractType type, string parentSub)
         {
             var item = type._item;
-            if (item == null || (BeforeState.TryGetValue(item.Id.Client, out int clock) && item.Id.Clock < clock && !item.Deleted))
+            if (item == null || (BeforeState.TryGetValue(item.Id.Client, out var clock) && item.Id.Clock < clock && !item.Deleted))
             {
                 if (!Changed.TryGetValue(type, out var set))
                 {
@@ -206,7 +206,7 @@ namespace Ycs
                         var client = kvp.Key;
                         var clock = kvp.Value;
 
-                        if (!transaction.BeforeState.TryGetValue(client, out int beforeClock))
+                        if (!transaction.BeforeState.TryGetValue(client, out var beforeClock))
                         {
                             beforeClock = 0;
                         }
@@ -245,12 +245,12 @@ namespace Ycs
 
                     if (!transaction.Local)
                     {
-                        if (!transaction.AfterState.TryGetValue(doc.ClientId, out int afterClock))
+                        if (!transaction.AfterState.TryGetValue(doc.ClientId, out var afterClock))
                         {
                             afterClock = -1;
                         }
 
-                        if (!transaction.BeforeState.TryGetValue(doc.ClientId, out int beforeClock))
+                        if (!transaction.BeforeState.TryGetValue(doc.ClientId, out var beforeClock))
                         {
                             beforeClock = -1;
                         }

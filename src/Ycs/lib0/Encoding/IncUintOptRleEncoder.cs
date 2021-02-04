@@ -61,12 +61,12 @@ namespace Ycs
                 // Case 2: Write several values. Set sign to negative to indicate that there is a length coming.
                 if (_count == 1)
                 {
-                    Stream.WriteVarInt((int)_state);
+                    Stream.WriteVarInt(_state);
                 }
                 else
                 {
                     // Specify 'treatZeroAsNegative' in case we pass the '-0' value.
-                    Stream.WriteVarInt(-(int)_state, treatZeroAsNegative: _state == 0);
+                    Stream.WriteVarInt(-_state, treatZeroAsNegative: _state == 0);
 
                     // Since count is always >1, we can decrement by one. Non-standard encoding.
                     Stream.WriteVarUint(_count - 2);

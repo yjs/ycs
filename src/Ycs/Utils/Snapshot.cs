@@ -14,9 +14,9 @@ namespace Ycs
     public sealed class Snapshot : IEquatable<Snapshot>
     {
         internal readonly DeleteSet DeleteSet;
-        internal readonly IDictionary<long, int> StateVector;
+        internal readonly IDictionary<long, long> StateVector;
 
-        internal Snapshot(DeleteSet ds, IDictionary<long, int> stateMap)
+        internal Snapshot(DeleteSet ds, IDictionary<long, long> stateMap)
         {
             DeleteSet = ds;
             StateVector = stateMap;
@@ -40,8 +40,8 @@ namespace Ycs
                     // Splitting the structs before writing them to the encoder.
                     foreach (var kvp in StateVector)
                     {
-                        long client = kvp.Key;
-                        int clock = kvp.Value;
+                        var client = kvp.Key;
+                        var clock = kvp.Value;
 
                         if (clock == 0)
                         {

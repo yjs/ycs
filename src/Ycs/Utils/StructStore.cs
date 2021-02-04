@@ -39,9 +39,9 @@ namespace Ycs
         /// Return the states as a Map<int,int>.
         /// Note that clock refers to the next expected clock id.
         /// </summary>
-        public IDictionary<long, int> GetStateVector()
+        public IDictionary<long, long> GetStateVector()
         {
-            var result = new Dictionary<long, int>(Clients.Count);
+            var result = new Dictionary<long, long>(Clients.Count);
 
             foreach (var kvp in Clients)
             {
@@ -52,7 +52,7 @@ namespace Ycs
             return result;
         }
 
-        public int GetState(long clientId)
+        public long GetState(long clientId)
         {
             if (Clients.TryGetValue(clientId, out var structs))
             {
@@ -92,10 +92,7 @@ namespace Ycs
 
         public void CleanupPendingStructs()
         {
-#if NETSTANDARD2_0
-            // NOTE: We cannot delete items from the Dictionary while iterating over it in netstandard2.0.
             var clientsToRemove = new List<long>();
-#endif // NETSTANDARD2_0
 
             // Cleanup pendingCLientsStructs if not fully finished.
             foreach (var kvp in _pendingClientStructRefs)
@@ -105,11 +102,7 @@ namespace Ycs
 
                 if (refs.NextReadOperation == refs.Refs.Count)
                 {
-#if NETSTANDARD2_0
                     clientsToRemove.Add(client);
-#else
-                    _pendingClientStructRefs.Remove(client);
-#endif // NETSTANDARD2_0
                 }
                 else
                 {
@@ -118,7 +111,6 @@ namespace Ycs
                 }
             }
 
-#if NETSTANDARD2_0
             if (clientsToRemove.Count > 0)
             {
                 foreach (var key in clientsToRemove)
@@ -126,7 +118,6 @@ namespace Ycs
                     _pendingClientStructRefs.Remove(key);
                 }
             }
-#endif // NETSTANDARD2_0
         }
 
         public void AddStruct(AbstractStruct str)
@@ -152,14 +143,14 @@ namespace Ycs
         /// Perform a binary search on a sorted array.
         /// </summary>
         // TODO: [alekseyk] IList<AbstractStruct> to custom class, and move this method there?
-        public static int FindIndexSS(IList<AbstractStruct> structs, int clock)
+        public static int FindIndexSS(IList<AbstractStruct> structs, long clock)
         {
             Debug.Assert(structs.Count > 0);
 
-            int left = 0;
-            int right = structs.Count - 1;
+            var left = 0;
+            var right = structs.Count - 1;
             var mid = structs[right];
-            int midClock = mid.Id.Clock;
+            var midClock = mid.Id.Clock;
 
             if (midClock == clock)
             {
@@ -169,7 +160,7 @@ namespace Ycs
             // @todo does it even make sense to pivot the search?
             // If a good split misses, it might actually increase the time to find the correct item.
             // Currently, the only advantage is that search with pivoting might find the item on the first try.
-            int midIndex = (clock * right) / (midClock + mid.Length - 1);
+            int midIndex = (int)((clock * right) / (midClock + mid.Length - 1));
             while (left <= right)
             {
                 mid = structs[midIndex];
@@ -216,13 +207,13 @@ namespace Ycs
             return structs[index];
         }
 
-        public int FindIndexCleanStart(Transaction transaction, List<AbstractStruct> structs, int clock)
+        public int FindIndexCleanStart(Transaction transaction, List<AbstractStruct> structs, long clock)
         {
             int index = FindIndexSS(structs, clock);
             var str = structs[index];
             if (str.Id.Clock < clock && str is Item item)
             {
-                structs.Insert(index + 1, item.SplitItem(transaction, clock - item.Id.Clock));
+                structs.Insert(index + 1, item.SplitItem(transaction, (int)(clock - item.Id.Clock)));
                 return index + 1;
             }
 
@@ -253,7 +244,7 @@ namespace Ycs
 
             if ((id.Clock != str.Id.Clock + str.Length - 1) && !(str is GC))
             {
-                structs.Insert(index + 1, (str as Item).SplitItem(transaction, id.Clock - str.Id.Clock + 1));
+                structs.Insert(index + 1, (str as Item).SplitItem(transaction, (int)(id.Clock - str.Id.Clock + 1)));
             }
 
             return str;
@@ -270,16 +261,16 @@ namespace Ycs
             structs[index] = newStruct;
         }
 
-        public void IterateStructs(Transaction transaction, List<AbstractStruct> structs, int clockStart, int length, Predicate<AbstractStruct> fun)
+        public void IterateStructs(Transaction transaction, List<AbstractStruct> structs, long clockStart, long length, Predicate<AbstractStruct> fun)
         {
             if (length <= 0)
             {
                 return;
             }
 
-            int clockEnd = clockStart + length;
+            var clockEnd = clockStart + length;
 
-            int index = FindIndexCleanStart(transaction, structs, clockStart);
+            var index = FindIndexCleanStart(transaction, structs, clockStart);
             AbstractStruct str;
 
             do
@@ -314,7 +305,7 @@ namespace Ycs
                 }
 
                 item = Find(nextId.Value);
-                diff = nextId.Value.Clock - item.Id.Clock;
+                diff = (int)(nextId.Value.Clock - item.Id.Clock);
                 nextId = (item as Item)?.Redone;
             } while (nextId != null && item is Item);
 
@@ -330,7 +321,7 @@ namespace Ycs
             {
                 decoder.ResetDsCurVal();
 
-                var client = (int)decoder.Reader.ReadVarUint();
+                var client = decoder.Reader.ReadVarUint();
                 var numberOfDeletes = decoder.Reader.ReadVarUint();
 
                 if (!Clients.TryGetValue(client, out var structs))
@@ -360,7 +351,7 @@ namespace Ycs
                         // Split the first item if necessary.
                         if (!str.Deleted && str.Id.Clock < clock)
                         {
-                            var splitItem = (str as Item).SplitItem(transaction, clock - str.Id.Clock);
+                            var splitItem = (str as Item).SplitItem(transaction, (int)(clock - str.Id.Clock));
                             structs.Insert(index + 1, splitItem);
 
                             // Increase, we now want to use the next struct.
@@ -376,7 +367,7 @@ namespace Ycs
                                 {
                                     if (clockEnd < str.Id.Clock + str.Length)
                                     {
-                                        var splitItem = (str as Item).SplitItem(transaction, clockEnd - str.Id.Clock);
+                                        var splitItem = (str as Item).SplitItem(transaction, (int)(clockEnd - str.Id.Clock));
                                         structs.Insert(index, splitItem);
                                     }
 
@@ -432,7 +423,8 @@ namespace Ycs
                     {
                         merged.Add(structRefs[i]);
                     }
-                    merged.Sort((a, b) => a.Id.Clock - b.Id.Clock);
+
+                    merged.Sort((a, b) => a.Id.Clock.CompareTo(b.Id.Clock));
 
                     pendingStructRefs.NextReadOperation = 0;
                     pendingStructRefs.Refs = merged;
@@ -502,12 +494,12 @@ namespace Ycs
 
             var stackHead = stack.Count > 0 ? stack.Pop() : curStructsTarget.Refs[curStructsTarget.NextReadOperation++];
             // Caching the state because it is used very often.
-            var state = new Dictionary<long, int>();
+            var state = new Dictionary<long, long>();
 
             // Iterate over all struct readers until we are done.
             while (true)
             {
-                if (!state.TryGetValue(stackHead.Id.Client, out int localClock))
+                if (!state.TryGetValue(stackHead.Id.Client, out var localClock))
                 {
                     localClock = GetState(stackHead.Id.Client);
                     state[stackHead.Id.Client] = localClock;
@@ -534,7 +526,7 @@ namespace Ycs
 
                             // Sort the set because this approach might bring the list out of order.
                             structRefs.Refs.RemoveRange(0, structRefs.NextReadOperation);
-                            structRefs.Refs.Sort((a, b) => a.Id.Clock - b.Id.Clock);
+                            structRefs.Refs.Sort((a, b) => a.Id.Clock.CompareTo(b.Id.Clock));
 
                             structRefs.NextReadOperation = 0;
                             continue;
@@ -551,7 +543,7 @@ namespace Ycs
                 {
                     if (offset == 0 || offset < stackHead.Length)
                     {
-                        stackHead.Integrate(transaction, offset);
+                        stackHead.Integrate(transaction, (int)offset);
                         state[stackHead.Id.Client] = stackHead.Id.Clock + stackHead.Length;
                     }
 

@@ -89,8 +89,8 @@ namespace Ycs
         }
 
         private void TestEncoder<TEncoder, TDecoder>(TEncoder encoder, Func<Stream, TDecoder> createDecoder, int n = 100)
-            where TEncoder : IEncoder<int>
-            where TDecoder : IDecoder<int>
+            where TEncoder : IEncoder<long>
+            where TDecoder : IDecoder<long>
         {
             for (int i = -n; i < n; i++)
             {
