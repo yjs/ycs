@@ -20,8 +20,5 @@ Server: Ycs, [AspNetCore](https://github.com/dotnet/aspnetcore), [SignalR](https
 
 Known issues
 -------
-* There is an issue serializing Yjs IDs from `Number` to the `System.Int32`. If the `YDoc.clientID` is larger than `int.MaxValue`, it's deserialized as a negative integer and corrupts the state.
-
-    As a workaround, you may want to overwrite the `clientID` property after you create the `YDoc`: `this.yDoc.clientID = Math.floor(Math.random() * Math.floor(1000000000));`
 
 * `Y.Xml` types are not yet supported.
