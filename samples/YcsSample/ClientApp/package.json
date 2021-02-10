@@ -1,11 +1,9 @@
 {
   "name": "ycs-sample",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@microsoft/signalr": "^5.0.2",
-    "@types/node": "^12.0.0",
-    "@types/react-dom": "^17.0.0",
     "bootstrap": "^4.6.0",
     "lib0": "0.2.35",
     "monaco-editor": "0.22.3",
@@ -16,9 +14,7 @@
     "react-dom": "^17.0.1",
     "react-monaco-editor": "^0.42.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.2",
     "reactstrap": "^8.9.0",
-    "typescript": "^4.1.2",
     "uuid": "8.3.1",
     "web-vitals": "^1.0.1",
     "y-monaco": "^0.1.2",
@@ -50,7 +46,11 @@
   },
   "devDependencies": {
     "@types/react": "^17.0.1",
+    "@types/react-dom": "^17.0.0",
     "@types/react-router": "^5.1.11",
-    "@types/react-router-dom": "^5.1.7"
+    "@types/react-router-dom": "^5.1.7",
+    "@types/node": "^12.0.0",
+    "react-scripts": "4.0.2",
+    "typescript": "^4.1.2"
   }
 }
