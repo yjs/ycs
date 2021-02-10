@@ -9,11 +9,11 @@ With this, you can host CRDTs in your `.Net` application and synchronize them wi
 
 Supports [Y.Array, Y.Map, Y.Text](https://github.com/yjs/yjs#shared-types), but does not yet support `Y.Xml` types.
 
-Short demo
+Demo
 -------
 
-Client: [Yjs](https://github.com/yjs/yjs), [Monaco editor](https://github.com/microsoft/monaco-editor), [SignalR](https://github.com/dotnet/aspnetcore/tree/master/src/SignalR).
+Client: [`Yjs`](https://github.com/yjs/yjs), [`MonacoEditor`](https://github.com/microsoft/monaco-editor), [`SignalR`](https://github.com/dotnet/aspnetcore/tree/master/src/SignalR).
 
-Server: Ycs, [AspNetCore](https://github.com/dotnet/aspnetcore), [SignalR](https://github.com/dotnet/aspnetcore/tree/master/src/SignalR).
+Server: `Ycs`, `SignalR`, [`AspNetCore`](https://github.com/dotnet/aspnetcore).
 
 ![img](https://github.com/yjs/ycs/blob/main/docs/ycs.gif)
