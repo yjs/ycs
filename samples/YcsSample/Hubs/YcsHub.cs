@@ -18,7 +18,7 @@ namespace YcsSample.Hubs
             public string Data { get; set; }
 
             [JsonPropertyName("inReplyTo")]
-            public CommandType? InReplyTo { get; set; }
+            public YjsCommandType? InReplyTo { get; set; }
         }
 
         public override async Task OnConnectedAsync()
@@ -33,13 +33,14 @@ namespace YcsSample.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        // SyncStep1
         public async Task GetMissing(string data)
         {
             var yjsMessage = JsonSerializer.Deserialize<YjsMessage>(data);
 
             var messageToProcess = new MessageToProcess
             {
-                Command = CommandType.GetMissing,
+                Command = YjsCommandType.GetMissing,
                 InReplyTo = yjsMessage.InReplyTo,
                 Data = yjsMessage.Data
             };
@@ -47,18 +48,29 @@ namespace YcsSample.Hubs
             await YcsManager.Instance.EnqueueAndProcessMessagesAsync(Context.ConnectionId, yjsMessage.Clock, messageToProcess, Context.ConnectionAborted);
         }
 
+        // SyncStep2
         public async Task Update(string data)
         {
             var yjsMessage = JsonSerializer.Deserialize<YjsMessage>(data);
 
             var messageToProcess = new MessageToProcess
             {
-                Command = CommandType.Update,
+                Command = YjsCommandType.Update,
                 InReplyTo = yjsMessage.InReplyTo,
                 Data = yjsMessage.Data
             };
 
             await YcsManager.Instance.EnqueueAndProcessMessagesAsync(Context.ConnectionId, yjsMessage.Clock, messageToProcess, Context.ConnectionAborted);
+        }
+
+        public async Task QueryAwareness(string data)
+        {
+            await Clients.Others.SendAsync(nameof(QueryAwareness), data, Context.ConnectionAborted);
+        }
+
+        public async Task UpdateAwareness(string data)
+        {
+            await Clients.Others.SendAsync(nameof(UpdateAwareness), data, Context.ConnectionAborted);
         }
     }
 }

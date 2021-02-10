@@ -13,7 +13,7 @@ using YcsSample.Middleware;
 namespace YcsSample.Yjs
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum CommandType
+    public enum YjsCommandType
     {
         GetMissing,
         Update
@@ -21,8 +21,8 @@ namespace YcsSample.Yjs
 
     public class MessageToProcess
     {
-        public CommandType Command;
-        public CommandType? InReplyTo;
+        public YjsCommandType Command;
+        public YjsCommandType? InReplyTo;
         public string Data;
     }
 
@@ -58,7 +58,7 @@ namespace YcsSample.Yjs
             public string Data { get; set; }
 
             [JsonPropertyName("inReplyTo")]
-            public CommandType? InReplyTo { get; set; }
+            public YjsCommandType? InReplyTo { get; set; }
         }
 
         private static readonly Lazy<YcsManager> _instance = new Lazy<YcsManager>(() => new YcsManager());
@@ -69,6 +69,10 @@ namespace YcsSample.Yjs
         private YcsManager()
         {
             YDoc = new YDoc();
+
+            // Prepopulate document with the data.
+            YDoc.GetText("monaco").Insert(0, "Hello, world!");
+
             YDoc.UpdateV2 += (sender, e) =>
             {
                 if (e.data == null || e.data.Length == 0)
@@ -91,7 +95,7 @@ namespace YcsSample.Yjs
                         };
 
                         YcsHubAccessor.Instance.YcsHub.Clients.Client(clientId)
-                            .SendAsync(CommandType.Update.ToString(), JsonSerializer.Serialize(msg))
+                            .SendAsync(YjsCommandType.Update.ToString(), JsonSerializer.Serialize(msg))
                             .ContinueWith((t) => { /* Ignore SendAsync() exceptions. */ });
                     }
                 }
@@ -114,7 +118,7 @@ namespace YcsSample.Yjs
             // We can fast-forward client clock if we're 'stuck' and/or have pending
             // GetMissing (SyncStep1) messages - they indicate the request for the initial/periodic
             // sync that will eventually make previous updates no-op.
-            Func<MessageToProcess, bool> isInitialSyncMessage = msg => msg.Command == CommandType.GetMissing;
+            Func<MessageToProcess, bool> isInitialSyncMessage = msg => msg.Command == YjsCommandType.GetMissing;
             if (context.Messages.Values.Any(isInitialSyncMessage))
             {
                 while (!isInitialSyncMessage(context.Messages[context.Messages.Keys[0]]))
@@ -132,6 +136,12 @@ namespace YcsSample.Yjs
                     break;
                 }
 
+                // Check for potential duplicates (unlikely to happen).
+                if (key == context.ClientClock)
+                {
+                    continue;
+                }
+
                 // Skip if we haven't received the next message yet.
                 if (key != context.ClientClock + 1)
                 {
@@ -142,7 +152,7 @@ namespace YcsSample.Yjs
 
                 switch (message.Command)
                 {
-                    case CommandType.GetMissing:
+                    case YjsCommandType.GetMissing:
                         {
                             byte[] decodedStateVector = DecodeString(message.Data);
 
@@ -160,29 +170,29 @@ namespace YcsSample.Yjs
                                 {
                                     Clock = context.IncrementAndGetServerClock(),
                                     Data = EncodeBytes(update),
-                                    InReplyTo = CommandType.GetMissing
+                                    InReplyTo = YjsCommandType.GetMissing
                                 };
 
                                 syncStep1Message = new MessageToClient
                                 {
                                     Clock = context.IncrementAndGetServerClock(),
                                     Data = EncodeBytes(stateVector),
-                                    InReplyTo = CommandType.GetMissing
+                                    InReplyTo = YjsCommandType.GetMissing
                                 };
                             }
 
                             await YcsHubAccessor.Instance.YcsHub.Clients.Client(connectionId)
-                                .SendAsync(CommandType.Update.ToString(), JsonSerializer.Serialize(syncStep2Message), cancellationToken);
+                                .SendAsync(YjsCommandType.Update.ToString(), JsonSerializer.Serialize(syncStep2Message), cancellationToken);
 
                             await YcsHubAccessor.Instance.YcsHub.Clients.Client(connectionId)
-                                .SendAsync(CommandType.GetMissing.ToString(), JsonSerializer.Serialize(syncStep1Message), cancellationToken);
+                                .SendAsync(YjsCommandType.GetMissing.ToString(), JsonSerializer.Serialize(syncStep1Message), cancellationToken);
                         }
                         break;
 
-                    case CommandType.Update:
+                    case YjsCommandType.Update:
                         {
                             // Ignore all updates until the client is synced.
-                            if (context.Synced || message.InReplyTo == CommandType.GetMissing)
+                            if (context.Synced || message.InReplyTo == YjsCommandType.GetMissing)
                             {
                                 var update = DecodeString(message.Data);
 
@@ -192,7 +202,7 @@ namespace YcsSample.Yjs
                                     YDoc.ApplyUpdateV2(update, this);
                                 }
 
-                                if (message.InReplyTo == CommandType.GetMissing)
+                                if (message.InReplyTo == YjsCommandType.GetMissing)
                                 {
                                     context.Synced = true;
                                 }
