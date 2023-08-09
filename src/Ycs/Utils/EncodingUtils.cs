@@ -111,7 +111,7 @@ namespace Ycs
             foreach (var kvp in store.GetStateVector())
             {
                 var client = kvp.Key;
-                if (!sm.ContainsKey(client))
+                if (!_sm.ContainsKey(client))
                 {
                     sm[client] = 0;
                 }
